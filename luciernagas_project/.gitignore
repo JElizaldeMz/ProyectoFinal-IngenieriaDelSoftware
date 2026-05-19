@@ -1,0 +1,31 @@
+# Variables de entorno — NUNCA subir al repositorio
+.env
+
+# Base de datos SQLite de desarrollo
+db.sqlite3
+
+# Bytecode de Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Archivos estáticos recolectados
+staticfiles/
+
+# Archivos media subidos por usuarios
+media/
+
+# IDEs
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Migraciones generadas (opcional, algunos proyectos las incluyen)
+# apps/*/migrations/0*.py

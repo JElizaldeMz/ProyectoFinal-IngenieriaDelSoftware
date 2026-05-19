@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block titulo %}Eliminar Parque — Admin{% endblock %}
+{% block header %}Eliminar Parque{% endblock %}
+
+{% block estilos %}
+<style>
+    main { display: flex; justify-content: center; padding: 2rem 1rem 4rem; }
+    .cancel-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); border: 1px solid rgba(239,68,68,0.25); border-radius: 16px; padding: 2.5rem; max-width: 460px; width: 100%; text-align: center; }
+    .cancel-card .icon { font-size: 3rem; margin-bottom: 1rem; }
+    .cancel-card h2 { color: #fca5a5; font-size: 1.4rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .cancel-card p { color: rgba(255,255,255,0.55); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .btn-row { display: flex; gap: 1rem; justify-content: center; }
+    .btn-confirmar { padding: 0.65rem 1.5rem; background: linear-gradient(135deg, #ef4444, #b91c1c); border: none; border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer; }
+    .btn-volver { padding: 0.65rem 1.5rem; background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: rgba(255,255,255,0.6); text-decoration: none; font-weight: 600; }
+    .btn-volver:hover { color: #fff; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="cancel-card">
+    <div class="icon">🗑️</div>
+    <h2>¿Eliminar "{{ object.nombre }}"?</h2>
+    <p>Esta acción eliminará el parque del sistema y su marcador desaparecerá del mapa. No se podrán hacer nuevas reservaciones.</p>
+    <div class="btn-row">
+        <a href="{% url 'parques:lista_admin' %}" class="btn-volver">No, conservar</a>
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-confirmar">Sí, eliminar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

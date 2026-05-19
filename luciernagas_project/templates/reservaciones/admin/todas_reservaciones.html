@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block titulo %}Todas las Reservaciones — Admin{% endblock %}
+{% block header %}Panel Admin — Reservaciones{% endblock %}
+
+{% block estilos %}
+<style>
+    main { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { color: rgba(255,255,255,0.5); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.6rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; }
+    tbody tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+    tbody td { padding: 0.8rem 1rem; font-size: 0.85rem; color: rgba(255,255,255,0.75); }
+    .badge-activa { background: rgba(16,185,129,0.2); color: #6ee7b7; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; }
+    .badge-cancelada { background: rgba(239,68,68,0.15); color: #fca5a5; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1.5rem;">
+    {% if reservaciones %}
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Cliente</th>
+                <th>Correo</th>
+                <th>Parque</th>
+                <th>Inicio</th>
+                <th>Término</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reservaciones %}
+            <tr>
+                <td>{{ r.pk }}</td>
+                <td>{{ r.cliente.usuario.get_full_name }}</td>
+                <td>{{ r.cliente.usuario.email }}</td>
+                <td>{{ r.parque.nombre }}</td>
+                <td>{{ r.fecha_inicio }}</td>
+                <td>{{ r.fecha_termino }}</td>
+                <td>{{ r.get_tipo_visita_display }}</td>
+                <td><span class="badge-{{ r.estado }}">{{ r.estado|capfirst }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align:center;color:rgba(255,255,255,0.4);padding:2rem;">No hay reservaciones registradas aún.</p>
+    {% endif %}
+</div>
+{% endblock %}

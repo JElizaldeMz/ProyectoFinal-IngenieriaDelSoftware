@@ -1,0 +1,56 @@
+[
+  {
+    "model": "parques.parque",
+    "pk": 1,
+    "fields": {
+      "nombre": "Parque Nacional Izta-Popo",
+      "direccional": "Carretera federal México-Cuautla km 38, Amecameca, Estado de México",
+      "servicios": "Guías especializados, senderos iluminados, área de descanso, sanitarios, estacionamiento",
+      "horario": "Miércoles a Domingo 18:00 – 23:00",
+      "latitud": 19.1777,
+      "longitud": -98.6408,
+      "tiene_cabanas": true,
+      "cap_camping": 40,
+      "cap_cabanas": 10,
+      "ocupados_camping": 0,
+      "ocupados_cabanas": 0,
+      "activo": true
+    }
+  },
+  {
+    "model": "parques.parque",
+    "pk": 2,
+    "fields": {
+      "nombre": "Bosque de Tlalpan",
+      "direccional": "Periferico Sur s/n, Tlalpan, Ciudad de México",
+      "servicios": "Zona de observación nocturna, guías, área de fogata, sanitarios",
+      "horario": "Miércoles a Domingo 19:00 – 23:30",
+      "latitud": 19.2720,
+      "longitud": -99.1823,
+      "tiene_cabanas": false,
+      "cap_camping": 60,
+      "cap_cabanas": 0,
+      "ocupados_camping": 0,
+      "ocupados_cabanas": 0,
+      "activo": true
+    }
+  },
+  {
+    "model": "parques.parque",
+    "pk": 3,
+    "fields": {
+      "nombre": "Reserva de la Biosfera Tehuacán-Cuicatlán",
+      "direccional": "Carretera Tehuacán-Oaxaca km 12, Puebla",
+      "servicios": "Cabañas equipadas, guías nocturnos, comedor, estacionamiento, senderos",
+      "horario": "Jueves a Domingo 18:30 – 24:00",
+      "latitud": 18.4516,
+      "longitud": -97.3926,
+      "tiene_cabanas": true,
+      "cap_camping": 30,
+      "cap_cabanas": 8,
+      "ocupados_camping": 0,
+      "ocupados_cabanas": 0,
+      "activo": true
+    }
+  }
+]

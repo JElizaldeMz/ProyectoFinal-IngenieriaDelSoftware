@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block titulo %}Reservación Confirmada — Luciérnagas 2026{% endblock %}
+{% block header %}¡Reservación Confirmada!{% endblock %}
+
+{% block estilos %}
+<style>
+    main { display: flex; justify-content: center; padding: 2rem 1rem 4rem; }
+    .confirm-card {
+        background: rgba(255,255,255,0.05); backdrop-filter: blur(12px);
+        border: 1px solid rgba(16,185,129,0.3); border-radius: 16px;
+        padding: 2.5rem; max-width: 520px; width: 100%;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.4); text-align: center;
+    }
+    .check { font-size: 3.5rem; margin-bottom: 1rem; }
+    .confirm-card h2 { color: #6ee7b7; font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .confirm-card .subtitle { color: rgba(255,255,255,0.5); font-size: 0.875rem; margin-bottom: 2rem; }
+    .resumen {
+        background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px; padding: 1.25rem; text-align: left; margin-bottom: 1.5rem;
+    }
+    .resumen-row { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .resumen-row:last-child { border-bottom: none; }
+    .resumen-row .key { color: rgba(255,255,255,0.5); font-size: 0.83rem; }
+    .resumen-row .val { color: #fff; font-size: 0.88rem; font-weight: 500; }
+    .correo-aviso { font-size: 0.82rem; color: rgba(255,255,255,0.4); margin-bottom: 1.5rem; }
+    .btn-mis { display: inline-block; padding: 0.7rem 2rem; background: linear-gradient(135deg, #3b82f6, #6366f1); border-radius: 8px; color: #fff; text-decoration: none; font-size: 0.9rem; font-weight: 600; }
+    .btn-mis:hover { opacity: 0.9; color: #fff; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="confirm-card">
+    <div class="check">✅</div>
+    <h2>¡Tu reservación está confirmada!</h2>
+    <p class="subtitle">Se ha enviado un correo de confirmación a {{ reservacion.cliente.usuario.email }}</p>
+
+    <div class="resumen">
+        <div class="resumen-row"><span class="key">Parque</span><span class="val">{{ reservacion.parque.nombre }}</span></div>
+        <div class="resumen-row"><span class="key">Tipo de visita</span><span class="val">{{ reservacion.get_tipo_visita_display }}</span></div>
+        <div class="resumen-row"><span class="key">Fecha de inicio</span><span class="val">{{ reservacion.fecha_inicio }}</span></div>
+        <div class="resumen-row"><span class="key">Fecha de término</span><span class="val">{{ reservacion.fecha_termino }}</span></div>
+        <div class="resumen-row"><span class="key">Personas</span><span class="val">{{ reservacion.num_personas }}</span></div>
+        <div class="resumen-row"><span class="key">Estado</span><span class="val" style="color:#6ee7b7;">{{ reservacion.estado|capfirst }}</span></div>
+    </div>
+
+    <p class="correo-aviso">📧 Revisa tu bandeja de entrada para ver los detalles completos</p>
+    <a href="{% url 'reservaciones:mis_reservaciones' %}" class="btn-mis">Ver mis reservaciones</a>
+</div>
+{% endblock %}

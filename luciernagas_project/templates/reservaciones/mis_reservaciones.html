@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block titulo %}Mis Reservaciones — Luciérnagas 2026{% endblock %}
+{% block header %}Mis Reservaciones{% endblock %}
+
+{% block estilos %}
+<style>
+    main { max-width: 800px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    .res-card {
+        background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+        padding: 1.5rem; margin-bottom: 1rem;
+        display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+    }
+    .res-info h4 { color: #f0c040; font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .res-info p { color: rgba(255,255,255,0.55); font-size: 0.83rem; margin: 0.15rem 0; }
+    .badge-activa { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.78rem; }
+    .badge-cancelada { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.78rem; }
+    .btn-cancelar {
+        padding: 0.4rem 1rem; background: transparent;
+        border: 1px solid rgba(239,68,68,0.4); color: #fca5a5;
+        border-radius: 6px; font-size: 0.82rem; cursor: pointer; white-space: nowrap;
+        text-decoration: none; transition: background 0.2s;
+    }
+    .btn-cancelar:hover { background: rgba(239,68,68,0.15); color: #fca5a5; }
+    .empty { text-align: center; color: rgba(255,255,255,0.4); padding: 3rem; }
+    .btn-nueva { display: inline-block; margin-top: 1rem; padding: 0.6rem 1.5rem; background: linear-gradient(135deg, #f0c040, #f97316); border-radius: 8px; color: #1a1a2e; text-decoration: none; font-size: 0.9rem; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+{% if reservaciones %}
+    {% for r in reservaciones %}
+    <div class="res-card">
+        <div class="res-info">
+            <h4>{{ r.parque.nombre }}</h4>
+            <p>📅 {{ r.fecha_inicio }} → {{ r.fecha_termino }}</p>
+            <p>🏕️ {{ r.get_tipo_visita_display }} · 👥 {{ r.num_personas }} personas</p>
+            <span class="badge-{{ r.estado }}">{{ r.estado|capfirst }}</span>
+        </div>
+        {% if r.estado == 'activa' %}
+        <a href="{% url 'reservaciones:cancelar' r.pk %}" class="btn-cancelar">Cancelar</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="empty">
+        <p style="font-size:2rem;">🌙</p>
+        <p>Aún no tienes reservaciones.</p>
+        <a href="{% url 'parques:mapa' %}" class="btn-nueva">Explorar parques</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -42,7 +42,7 @@
             <div class="popup-info">🛎️ ${p.servicios}</div>
             ${p.tiene_cabanas ? '<div class="popup-info">🏠 Cabañas disponibles</div>' : ''}
             <div class="popup-info">🏕️ Zona de camping</div>
-            <a href="/${p.id}/" class="popup-btn">Ver detalle</a>
+            <a href="/parques/${p.id}/" class="popup-btn">Ver detalle</a>
         `;
         L.marker([p.latitud, p.longitud])
             .addTo(mapa)

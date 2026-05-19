@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block titulo %}{{ parque.nombre }} — Luciérnagas 2026{% endblock %}
+{% block header %}{{ parque.nombre }}{% endblock %}
+
+{% block estilos %}
+<style>
+    main { display: flex; justify-content: center; padding: 2rem 1rem 4rem; }
+    .detalle-card {
+        background: rgba(255,255,255,0.05); backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+        padding: 2.5rem; max-width: 580px; width: 100%;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+    }
+    .detalle-card h2 { color: #f0c040; font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; }
+    .info-row { display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 1rem; }
+    .info-row .icon { font-size: 1.2rem; min-width: 1.5rem; }
+    .info-row .label { color: rgba(255,255,255,0.5); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .info-row .valor { color: #fff; font-size: 0.9rem; margin-top: 0.1rem; }
+    .badge-hospedaje {
+        display: inline-block; padding: 0.3rem 0.75rem; border-radius: 20px;
+        font-size: 0.78rem; font-weight: 600; margin-right: 0.5rem; margin-top: 0.5rem;
+    }
+    .badge-camping { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+    .badge-cabana { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+    .btn-reservar {
+        display: block; width: 100%; padding: 0.8rem;
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        border: none; border-radius: 8px; color: #fff;
+        font-size: 1rem; font-weight: 600; text-align: center;
+        text-decoration: none; margin-top: 2rem; transition: opacity 0.2s;
+    }
+    .btn-reservar:hover { opacity: 0.9; color: #fff; }
+    .btn-volver { display: inline-block; margin-top: 1rem; color: rgba(255,255,255,0.4); font-size: 0.85rem; text-decoration: none; }
+    .btn-volver:hover { color: #fff; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="detalle-card">
+    <h2>{{ parque.nombre }}</h2>
+    <div class="info-row">
+        <span class="icon">📍</span>
+        <div><div class="label">Dirección</div><div class="valor">{{ parque.direccional }}</div></div>
+    </div>
+    <div class="info-row">
+        <span class="icon">🕐</span>
+        <div><div class="label">Horario</div><div class="valor">{{ parque.horario }}</div></div>
+    </div>
+    <div class="info-row">
+        <span class="icon">🛎️</span>
+        <div><div class="label">Servicios</div><div class="valor">{{ parque.servicios }}</div></div>
+    </div>
+    <div class="info-row">
+        <span class="icon">🏕️</span>
+        <div>
+            <div class="label">Hospedaje disponible</div>
+            <div>
+                <span class="badge-hospedaje badge-camping">Camping ({{ parque.cap_camping }} lugares)</span>
+                {% if parque.tiene_cabanas %}
+                <span class="badge-hospedaje badge-cabana">Cabañas ({{ parque.cap_cabanas }} lugares)</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_authenticated and not user.is_staff %}
+        <a href="{% url 'reservaciones:nueva' %}?parque={{ parque.pk }}" class="btn-reservar">Reservar en este parque</a>
+    {% elif not user.is_authenticated %}
+        <a href="{% url 'usuarios:login' %}" class="btn-reservar">Inicia sesión para reservar</a>
+    {% endif %}
+
+    <a href="{% url 'parques:mapa' %}" class="btn-volver">← Volver al mapa</a>
+</div>
+{% endblock %}

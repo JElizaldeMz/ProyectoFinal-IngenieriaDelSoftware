@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block titulo %}Nueva Reservación — Luciérnagas 2026{% endblock %}
+{% block header %}Realizar Reservación{% endblock %}
+
+{% block estilos %}
+<style>
+    main { display: flex; justify-content: center; padding: 2rem 1rem 4rem; }
+    .auth-card {
+        background: rgba(255,255,255,0.05); backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+        padding: 2.5rem; max-width: 520px; width: 100%;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+    }
+    .auth-card h2 { font-size: 1.5rem; font-weight: 600; color: #f0c040; margin-bottom: 0.25rem; }
+    .auth-card .subtitle { font-size: 0.875rem; color: rgba(255,255,255,0.45); margin-bottom: 1.75rem; }
+    .auth-card label { color: rgba(255,255,255,0.75); font-size: 0.85rem; }
+    .auth-card .form-control, .auth-card select {
+        background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+        color: #fff; border-radius: 8px; padding: 0.6rem 0.9rem;
+    }
+    .auth-card .form-control:focus, .auth-card select:focus {
+        background: rgba(255,255,255,0.12); border-color: #f0c040;
+        box-shadow: 0 0 0 3px rgba(240,192,64,0.2); color: #fff;
+    }
+    .auth-card select option { background: #302b63; color: #fff; }
+    .auth-card .helptext, .auth-card small { color: rgba(255,255,255,0.3) !important; font-size: 0.78rem; }
+    .auth-card .errorlist li { color: #ff6b6b; font-size: 0.8rem; list-style: none; }
+    .aviso {
+        background: rgba(240,192,64,0.1); border: 1px solid rgba(240,192,64,0.25);
+        border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.82rem;
+        color: rgba(255,255,255,0.6); margin-bottom: 1.25rem;
+    }
+    .btn-reservar {
+        width: 100%; padding: 0.7rem;
+        background: linear-gradient(135deg, #f0c040, #f97316);
+        border: none; border-radius: 8px; color: #1a1a2e;
+        font-size: 0.95rem; font-weight: 600; cursor: pointer;
+        transition: opacity 0.2s, transform 0.1s; margin-top: 0.5rem;
+    }
+    .btn-reservar:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-volver { display: inline-block; margin-top: 1rem; color: rgba(255,255,255,0.4); font-size: 0.85rem; text-decoration: none; }
+    .btn-volver:hover { color: #fff; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="auth-card">
+    <h2>Nueva reservación</h2>
+    <p class="subtitle">Asegura tu lugar en el festival</p>
+
+    <div class="aviso">
+        📅 Solo fechas de <strong>junio a agosto 2026</strong> — sin días martes (mantenimiento)
+    </div>
+
+    {% if form.non_field_errors %}
+    <div style="background:rgba(255,107,107,0.15);border:1px solid rgba(255,107,107,0.3);color:#ff9999;border-radius:8px;padding:0.75rem 1rem;font-size:0.85rem;margin-bottom:1rem;">
+        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn-reservar">Confirmar reservación</button>
+    </form>
+    <a href="{% url 'parques:mapa' %}" class="btn-volver">← Volver al mapa</a>
+</div>
+{% endblock %}
