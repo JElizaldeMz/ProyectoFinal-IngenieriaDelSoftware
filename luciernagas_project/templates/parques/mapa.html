@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block titulo %}Mapa de Parques — Luciérnagas 2026{% endblock %}
+{% block header %}Parques Oficiales del Festival{% endblock %}
+
+{% block estilos %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+    main { padding: 1rem 1rem 3rem; }
+    #mapa { height: 500px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+    .mapa-wrapper { max-width: 1000px; margin: 0 auto; }
+    .popup-titulo { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; }
+    .popup-info { font-size: 0.85rem; color: #555; margin-bottom: 0.5rem; }
+    .popup-btn {
+        display: inline-block; padding: 0.4rem 1rem;
+        background: linear-gradient(135deg, #7c6af7, #a855f7);
+        color: #fff; border-radius: 6px; text-decoration: none; font-size: 0.82rem;
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="mapa-wrapper">
+    <div id="mapa"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const parques = {{ parques_json|safe }};
+    const mapa = L.map('mapa').setView([19.4, -98.5], 8);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(mapa);
+
+    parques.forEach(p => {
+        const popup = `
+            <div class="popup-titulo">${p.nombre}</div>
+            <div class="popup-info">📍 ${p.direccion}</div>
+            <div class="popup-info">🕐 ${p.horario}</div>
+            <div class="popup-info">🛎️ ${p.servicios}</div>
+            ${p.tiene_cabanas ? '<div class="popup-info">🏠 Cabañas disponibles</div>' : ''}
+            <div class="popup-info">🏕️ Zona de camping</div>
+            <a href="/${p.id}/" class="popup-btn">Ver detalle</a>
+        `;
+        L.marker([p.latitud, p.longitud])
+            .addTo(mapa)
+            .bindPopup(popup);
+    });
+</script>
+{% endblock %}
