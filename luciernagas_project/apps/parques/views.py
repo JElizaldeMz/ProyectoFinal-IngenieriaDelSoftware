@@ -1,7 +1,6 @@
 """
 Vistas del módulo de parques — MEC Solutions
 Patrón Template Method via Class-Based Views (CBV) de Django.
-CU-01/06 Mapa | CU-02/07 Detalle | CU-16 Crear | CU-17 Editar | CU-18 Eliminar
 """
 
 import json
@@ -16,25 +15,20 @@ from .forms import ParqueForm
 
 
 def landing(request):
-    """Landing page — página principal del festival."""
     return render(request, 'parques/landing.html')
 
 
 def mapa(request):
-    """
-    CU-01 / CU-06 — Mapa interactivo con todos los parques oficiales (RF02.1).
-    Pasa los datos de parques como JSON para Leaflet.js.
-    """
     parques = Parque.objects.filter(activo=True)
     parques_json = json.dumps([
         {
-            'id':        p.pk,
-            'nombre':    p.nombre,
-            'latitud':   p.latitud,
-            'longitud':  p.longitud,
-            'direccion': p.direccional,
-            'servicios': p.servicios,
-            'horario':   p.horario,
+            'id':            p.pk,
+            'nombre':        p.nombre,
+            'latitud':       p.latitud,
+            'longitud':      p.longitud,
+            'direccion':     p.direccional,
+            'servicios':     p.servicios,
+            'horario':       p.horario,
             'tiene_cabanas': p.tiene_cabanas,
         }
         for p in parques
@@ -46,20 +40,70 @@ def mapa(request):
 
 
 def detalle_parque(request, pk):
-    """
-    CU-02 / CU-07 — Información del parque al hacer clic en el marcador (RF02.2).
-    """
     parque = get_object_or_404(Parque, pk=pk, activo=True)
-    return render(request, 'parques/detalle.html', {'parque': parque})
+    disp_camping = parque.cap_camping - parque.ocupados_camping
+    disp_cabanas = parque.cap_cabanas - parque.ocupados_cabanas if parque.tiene_cabanas else 0
+    return render(request, 'parques/detalle.html', {
+        'parque':      parque,
+        'disp_camping': disp_camping,
+        'disp_cabanas': disp_cabanas,
+    })
 
 
-# ── Vistas CRUD para administradores (Patrón Template Method) ─────────────────
+def parques_json_api(request):
+    """
+    Endpoint JSON — disponibilidad por fechas.
+    Si se pasan fecha_inicio y fecha_termino como GET params,
+    calcula disponibilidad considerando solapamiento.
+    """
+    from apps.reservaciones.models import Reservacion
+
+    fecha_ini_str = request.GET.get('fecha_inicio')
+    fecha_fin_str = request.GET.get('fecha_termino')
+
+    parques = Parque.objects.filter(activo=True)
+    data = {}
+
+    for p in parques:
+        # Si hay fechas, calcular solapamiento real
+        if fecha_ini_str and fecha_fin_str:
+            try:
+                from datetime import date
+                fi = date.fromisoformat(fecha_ini_str)
+                ff = date.fromisoformat(fecha_fin_str)
+
+                ocupados_camping = Reservacion.objects.filter(
+                    parque=p, tipo_visita='camping', estado='activa',
+                    fecha_inicio__lt=ff, fecha_termino__gt=fi,
+                ).count()
+
+                ocupados_cabanas = Reservacion.objects.filter(
+                    parque=p, tipo_visita='cabana', estado='activa',
+                    fecha_inicio__lt=ff, fecha_termino__gt=fi,
+                ).count() if p.tiene_cabanas else 0
+
+            except ValueError:
+                ocupados_camping = p.ocupados_camping
+                ocupados_cabanas = p.ocupados_cabanas
+        else:
+            # Sin fechas — usar contadores generales
+            ocupados_camping = p.ocupados_camping
+            ocupados_cabanas = p.ocupados_cabanas
+
+        data[str(p.pk)] = {
+            'tiene_cabanas': p.tiene_cabanas,
+            'disp_camping':  max(0, p.cap_camping - ocupados_camping),
+            'disp_cabanas':  max(0, p.cap_cabanas - ocupados_cabanas),
+        }
+
+    return JsonResponse(data)
+
+
+# ── Patrón Template Method via CBV ────────────────────────────────────────────
 
 class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Mixin que restringe el acceso exclusivamente a administradores."""
-
     def test_func(self):
-        return hasattr(self.request.user, 'administrador')
+        return self.request.user.is_staff
 
 
 class ParqueCreateView(AdminRequiredMixin, CreateView):
@@ -91,14 +135,13 @@ class ParqueUpdateView(AdminRequiredMixin, UpdateView):
 
 
 class ParqueDeleteView(AdminRequiredMixin, DeleteView):
-    """CU-18 — Eliminar parque (con confirmación CU-19)."""
+    """CU-18 — Eliminar parque."""
     model         = Parque
     template_name = 'parques/admin/confirmar_eliminacion.html'
     success_url   = reverse_lazy('parques:lista_admin')
 
 
 class ParqueListView(AdminRequiredMixin, ListView):
-    """Listado de parques en el panel de administrador."""
-    model         = Parque
-    template_name = 'parques/admin/lista_parques.html'
+    model               = Parque
+    template_name       = 'parques/admin/lista_parques.html'
     context_object_name = 'parques'

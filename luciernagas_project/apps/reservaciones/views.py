@@ -1,6 +1,5 @@
 """
 Vistas del módulo de reservaciones — MEC Solutions
-CU-08 Nueva | CU-12 Mis reservaciones | CU-13 Cancelar | CU-20 Admin
 """
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -11,11 +10,10 @@ from apps.parques.models import Parque
 from apps.usuarios.models import Cliente
 from .models import Reservacion
 from .forms import ReservacionForm
-from .validaciones import ValidacionFestival, ValidacionSinMartes, ValidacionDisponibilidad
+from .validaciones import ValidadorReservaciones
 
 
 def _get_or_create_cliente(user):
-    """Obtiene o crea el perfil Cliente del usuario autenticado."""
     cliente, _ = Cliente.objects.get_or_create(usuario=user)
     return cliente
 
@@ -24,13 +22,11 @@ def _get_or_create_cliente(user):
 def nueva_reservacion(request):
     """CU-08 — Realizar reservación."""
 
-    # Admins no pueden reservar
     if hasattr(request.user, 'administrador') or request.user.is_staff:
         messages.error(request, 'Los administradores no pueden realizar reservaciones.')
         return redirect('parques:mapa')
 
     cliente = _get_or_create_cliente(request.user)
-
     parque_id = request.GET.get('parque')
     parque_inicial = Parque.objects.filter(pk=parque_id, activo=True).first() if parque_id else None
 
@@ -40,22 +36,14 @@ def nueva_reservacion(request):
             reservacion = form.save(commit=False)
             reservacion.cliente = cliente
 
-            # Patrón Strategy — validaciones en secuencia
-            estrategias = [
-                ValidacionFestival(),
-                ValidacionSinMartes(),
-                ValidacionDisponibilidad(),
-            ]
-            error = None
-            for estrategia in estrategias:
-                valido, mensaje = estrategia.validar(reservacion)
-                if not valido:
-                    error = mensaje
-                    break
+            # ── Singleton: una sola instancia del validador ───────────────────
+            validador = ValidadorReservaciones()
+            valido, mensaje = validador.validar(reservacion)
 
-            if error:
-                form.add_error(None, error)
+            if not valido:
+                form.add_error(None, mensaje)
             else:
+                # confirmar() dispara el Observer internamente
                 reservacion.confirmar()
                 messages.success(request, '¡Reservación realizada exitosamente!')
                 return redirect('reservaciones:confirmacion', pk=reservacion.pk)
@@ -71,52 +59,35 @@ def nueva_reservacion(request):
 
 @login_required
 def confirmacion(request, pk):
-    """CU-11 — Pantalla de éxito."""
     cliente = _get_or_create_cliente(request.user)
     reservacion = get_object_or_404(Reservacion, pk=pk, cliente=cliente)
-    return render(request, 'reservaciones/confirmacion.html', {
-        'reservacion': reservacion,
-    })
+    return render(request, 'reservaciones/confirmacion.html', {'reservacion': reservacion})
 
 
 @login_required
 def mis_reservaciones(request):
-    """CU-12 — Consultar reservaciones del cliente."""
     cliente = _get_or_create_cliente(request.user)
     reservaciones = cliente.reservaciones.all().order_by('-fecha_creacion')
-    return render(request, 'reservaciones/mis_reservaciones.html', {
-        'reservaciones': reservaciones,
-    })
+    return render(request, 'reservaciones/mis_reservaciones.html', {'reservaciones': reservaciones})
 
 
 @login_required
 def cancelar_reservacion(request, pk):
-    """CU-13 — Cancelar una reservación activa."""
     cliente = _get_or_create_cliente(request.user)
-    reservacion = get_object_or_404(
-        Reservacion, pk=pk, cliente=cliente, estado='activa'
-    )
+    reservacion = get_object_or_404(Reservacion, pk=pk, cliente=cliente, estado='activa')
     if request.method == 'POST':
         reservacion.cancelar()
         messages.success(request, 'Tu reservación fue cancelada exitosamente.')
         return redirect('reservaciones:mis_reservaciones')
-
-    return render(request, 'reservaciones/confirmar_cancelacion.html', {
-        'reservacion': reservacion,
-    })
+    return render(request, 'reservaciones/confirmar_cancelacion.html', {'reservacion': reservacion})
 
 
 @login_required
 def todas_reservaciones(request):
-    """CU-20 — Ver todas las reservaciones (solo admin)."""
     if not request.user.is_staff:
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('parques:mapa')
-
     reservaciones = Reservacion.objects.select_related(
         'cliente__usuario', 'parque'
     ).all().order_by('-fecha_creacion')
-
-    return render(request, 'reservaciones/admin/todas_reservaciones.html', {
-        'reservaciones': reservaciones,
-    })
+    return render(request, 'reservaciones/admin/todas_reservaciones.html', {'reservaciones': reservaciones})

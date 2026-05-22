@@ -8,10 +8,6 @@ from .models import Reservacion, TipoVisita
 
 
 class ReservacionForm(forms.ModelForm):
-    """
-    Formulario de reservación (CU-08 — RF01.5).
-    Campos: parque, fecha_inicio, fecha_termino, num_personas, tipo_visita.
-    """
 
     class Meta:
         model  = Reservacion
@@ -39,17 +35,19 @@ class ReservacionForm(forms.ModelForm):
 
     def __init__(self, *args, usuario=None, **kwargs):
         super().__init__(*args, **kwargs)
-        # Solo mostrar parques activos
         self.fields['parque'].queryset = Parque.objects.filter(activo=True)
 
-    def clean(self):
-        cleaned_data  = super().clean()
-        parque        = cleaned_data.get('parque')
-        tipo_visita   = cleaned_data.get('tipo_visita')
+    def clean_num_personas(self):
+        num = self.cleaned_data.get('num_personas')
+        if num is not None and num < 1:
+            raise forms.ValidationError('El número de personas debe ser al menos 1.')
+        return num
 
-        # Verificar que el parque ofrezca el tipo de visita seleccionado (RNF03)
+    def clean(self):
+        cleaned_data = super().clean()
+        parque       = cleaned_data.get('parque')
+        tipo_visita  = cleaned_data.get('tipo_visita')
         if parque and tipo_visita == TipoVisita.CABANA and not parque.tiene_cabanas:
             self.add_error('tipo_visita',
-                           f'El parque "{parque.nombre}" no cuenta con cabañas. '
-                           f'Solo puedes elegir camping.')
+                           f'El parque "{parque.nombre}" no cuenta con cabañas.')
         return cleaned_data

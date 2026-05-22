@@ -24,6 +24,7 @@
         box-shadow: 0 0 0 3px rgba(240,192,64,0.2); color: #fff;
     }
     .auth-card select option { background: #302b63; color: #fff; }
+    .auth-card select option:disabled { display: none; }
     .auth-card .helptext, .auth-card small { color: rgba(255,255,255,0.3) !important; font-size: 0.78rem; }
     .auth-card .errorlist li { color: #ff6b6b; font-size: 0.8rem; list-style: none; }
     .aviso {
@@ -31,6 +32,13 @@
         border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.82rem;
         color: rgba(255,255,255,0.6); margin-bottom: 1.25rem;
     }
+    .aviso-disponibilidad {
+        border-radius: 8px; padding: 0.65rem 1rem; font-size: 0.82rem;
+        margin-top: 0.5rem; display: none;
+    }
+    .aviso-disponibilidad.visible { display: block; }
+    .aviso-disponibilidad.info { background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: rgba(255,255,255,0.65); }
+    .aviso-disponibilidad.error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
     .btn-reservar {
         width: 100%; padding: 0.7rem;
         background: linear-gradient(135deg, #f0c040, #f97316);
@@ -39,6 +47,7 @@
         transition: opacity 0.2s, transform 0.1s; margin-top: 0.5rem;
     }
     .btn-reservar:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-reservar:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
     .btn-volver { display: inline-block; margin-top: 1rem; color: rgba(255,255,255,0.4); font-size: 0.85rem; text-decoration: none; }
     .btn-volver:hover { color: #fff; }
 </style>
@@ -59,11 +68,111 @@
     </div>
     {% endif %}
 
-    <form method="post">
+    <form method="post" id="form-reservacion">
         {% csrf_token %}
         {{ form|crispy }}
-        <button type="submit" class="btn-reservar">Confirmar reservación</button>
+        <div class="aviso-disponibilidad" id="aviso-disp"></div>
+        <button type="submit" class="btn-reservar" id="btn-confirmar">Confirmar reservación</button>
     </form>
     <a href="{% url 'parques:mapa' %}" class="btn-volver">← Volver al mapa</a>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let parquesData = {};
+
+function cargarDisponibilidad() {
+    const fi = document.getElementById('id_fecha_inicio')?.value || '';
+    const ff = document.getElementById('id_fecha_termino')?.value || '';
+    const url = "{% url 'parques:api_parques' %}" + (fi && ff ? `?fecha_inicio=${fi}&fecha_termino=${ff}` : '');
+
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            parquesData = data;
+            const sel = document.getElementById('id_parque');
+            if (sel && sel.value) actualizarTipoVisita(sel.value);
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    cargarDisponibilidad();
+
+    const selParque = document.getElementById('id_parque');
+    const inputFI   = document.getElementById('id_fecha_inicio');
+    const inputFF   = document.getElementById('id_fecha_termino');
+
+    if (selParque) selParque.addEventListener('change', function () { actualizarTipoVisita(this.value); });
+    if (inputFI)   inputFI.addEventListener('change', cargarDisponibilidad);
+    if (inputFF)   inputFF.addEventListener('change', cargarDisponibilidad);
+});
+
+function actualizarTipoVisita(parqueId) {
+    const selTipo   = document.getElementById('id_tipo_visita');
+    const aviso     = document.getElementById('aviso-disp');
+    const btn       = document.getElementById('btn-confirmar');
+
+    if (!selTipo) return;
+
+    // Sin parque — mostrar todo
+    if (!parqueId || !parquesData[parqueId]) {
+        mostrarOpcion(selTipo, 'camping', true);
+        mostrarOpcion(selTipo, 'cabana',  true);
+        aviso.classList.remove('visible', 'info', 'error');
+        btn.disabled = false;
+        return;
+    }
+
+    const info        = parquesData[parqueId];
+    const hayCabanas  = info.tiene_cabanas;
+    const dispCamping = info.disp_camping;
+    const dispCabanas = info.disp_cabanas;
+
+    // Mostrar u ocultar opciones según disponibilidad real
+    mostrarOpcion(selTipo, 'camping', dispCamping > 0);
+    mostrarOpcion(selTipo, 'cabana',  hayCabanas && dispCabanas > 0);
+
+    // Si la opción actualmente seleccionada ya no está disponible, limpiar
+    const valorActual = selTipo.value;
+    if (valorActual === 'cabana' && (!hayCabanas || dispCabanas <= 0)) selTipo.value = '';
+    if (valorActual === 'camping' && dispCamping <= 0) selTipo.value = '';
+
+    // Auto-seleccionar si solo hay una opción disponible
+    const camping_ok = dispCamping > 0;
+    const cabana_ok  = hayCabanas && dispCabanas > 0;
+    if (camping_ok && !cabana_ok) selTipo.value = 'camping';
+    if (cabana_ok && !camping_ok) selTipo.value = 'cabana';
+
+    // Construir mensaje de disponibilidad
+    const hayAlgo = camping_ok || cabana_ok;
+    btn.disabled  = !hayAlgo;
+
+    let lineas = [];
+    if (!hayCabanas) {
+        lineas.push('🏕️ Este parque solo tiene zona de camping.');
+    } else {
+        if (cabana_ok)  lineas.push(`🏠 Cabañas disponibles: ${dispCabanas} lugar(es).`);
+        else            lineas.push('🏠 Cabañas: sin disponibilidad.');
+        if (camping_ok) lineas.push(`🏕️ Camping disponible: ${dispCamping} lugar(es).`);
+        else            lineas.push('🏕️ Camping: sin disponibilidad.');
+    }
+    if (!hayAlgo)   lineas.push('⚠️ Este parque no tiene disponibilidad. Elige otro parque.');
+
+    aviso.innerHTML = lineas.join('<br>');
+    aviso.className = 'aviso-disponibilidad visible ' + (hayAlgo ? 'info' : 'error');
+}
+
+function mostrarOpcion(select, valor, mostrar) {
+    let opt = select.querySelector(`option[value="${valor}"]`);
+    if (!opt) return;
+    if (mostrar) {
+        opt.disabled = false;
+        opt.style.display = '';
+    } else {
+        opt.disabled = true;
+        opt.style.display = 'none';  // oculta completamente la opción
+    }
+}
+</script>
 {% endblock %}

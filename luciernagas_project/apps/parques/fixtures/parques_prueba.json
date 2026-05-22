@@ -52,5 +52,23 @@
       "ocupados_cabanas": 0,
       "activo": true
     }
+  },
+  {
+    "model": "parques.parque",
+    "pk": 4,
+    "fields": {
+      "nombre": "Parque Prueba — Disponibilidad Limitada",
+      "direccional": "Av. de las Luciérnagas 404, Tlaxcala",
+      "servicios": "Zona de observación, guías nocturnos, área de descanso",
+      "horario": "Viernes a Domingo 19:00 – 23:00",
+      "latitud": 19.3182,
+      "longitud": -98.2375,
+      "tiene_cabanas": true,
+      "cap_camping": 2,
+      "cap_cabanas": 2,
+      "ocupados_camping": 0,
+      "ocupados_cabanas": 0,
+      "activo": true
+    }
   }
 ]
