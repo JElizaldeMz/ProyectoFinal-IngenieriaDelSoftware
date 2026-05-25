@@ -1,34 +1,30 @@
 {% extends "base.html" %}
 {% block titulo %}Todas las Reservaciones — Admin{% endblock %}
-{% block header %}Panel Admin — Reservaciones{% endblock %}
+{% block header %}Panel Admin<br><em>Reservaciones</em>{% endblock %}
 
 {% block estilos %}
 <style>
-    main { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    main { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+    .table-wrap { background: var(--white); border: 1px solid rgba(87,61,33,0.1); border-radius: 2px; overflow: hidden; }
     table { width: 100%; border-collapse: collapse; }
-    thead th { color: rgba(255,255,255,0.5); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.6rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; }
-    tbody tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
-    tbody tr:hover { background: rgba(255,255,255,0.03); }
-    tbody td { padding: 0.8rem 1rem; font-size: 0.85rem; color: rgba(255,255,255,0.75); }
-    .badge-activa { background: rgba(16,185,129,0.2); color: #6ee7b7; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; }
-    .badge-cancelada { background: rgba(239,68,68,0.15); color: #fca5a5; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; }
+    thead th { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); padding: 0.9rem 1rem; border-bottom: 1px solid rgba(87,61,33,0.1); text-align: left; background: #faf7f3; }
+    tbody tr { border-bottom: 1px solid rgba(87,61,33,0.06); }
+    tbody tr:hover { background: #faf7f3; }
+    tbody td { padding: 0.9rem 1rem; font-size: 0.85rem; color: var(--text); }
+    .badge-activa { display: inline-block; background: #eef4e8; color: var(--green-dark); border-radius: 2px; padding: 0.15rem 0.55rem; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; }
+    .badge-cancelada { display: inline-block; background: #faeae8; color: #8b3a2a; border-radius: 2px; padding: 0.15rem 0.55rem; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; }
+    .empty-msg { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.9rem; }
 </style>
 {% endblock %}
 
 {% block contenido %}
-<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1.5rem;">
+<div class="table-wrap">
     {% if reservaciones %}
     <table>
         <thead>
             <tr>
-                <th>#</th>
-                <th>Cliente</th>
-                <th>Correo</th>
-                <th>Parque</th>
-                <th>Inicio</th>
-                <th>Término</th>
-                <th>Tipo</th>
-                <th>Estado</th>
+                <th>#</th><th>Cliente</th><th>Correo</th><th>Parque</th>
+                <th>Inicio</th><th>Término</th><th>Tipo</th><th>Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -47,7 +43,7 @@
         </tbody>
     </table>
     {% else %}
-    <p style="text-align:center;color:rgba(255,255,255,0.4);padding:2rem;">No hay reservaciones registradas aún.</p>
+    <div class="empty-msg">No hay reservaciones registradas aún.</div>
     {% endif %}
 </div>
 {% endblock %}

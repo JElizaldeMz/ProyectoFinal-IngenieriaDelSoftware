@@ -1,72 +1,116 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
-
-{% block titulo %}Iniciar Sesión — Luciérnagas 2026{% endblock %}
-{% block header %}Bienvenido de vuelta{% endblock %}
+{% block titulo %}Iniciar sesión — Luciérnagas 2026{% endblock %}
 
 {% block estilos %}
 <style>
-    main { display: flex; justify-content: center; align-items: flex-start; padding: 2rem 1rem 4rem; }
+    header.base-header { display: none; }
+    nav.base-nav { background: transparent; border-bottom: none; }
+    nav.base-nav .brand, nav.base-nav a, nav.base-nav form button { color: #3d2c1a; }
+    main { padding: 0; overflow: hidden; }
+
+    .auth-scene {
+        position: relative; min-height: 100vh;
+        display: flex; align-items: center; justify-content: center;
+        background: #c8bc96;
+    }
+    #auth-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
     .auth-card {
-        background: rgba(255,255,255,0.05);
-        backdrop-filter: blur(14px);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 16px; padding: 2.5rem;
-        width: 100%; max-width: 420px;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        position: relative; z-index: 10;
+        width: min(420px, 92vw);
+        background: rgba(250,247,243,0.96);
+        border: 1px solid rgba(87,61,33,0.12);
+        border-radius: 4px;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.15);
+        padding: 3rem 2.5rem;
+        animation: cardIn 0.7s cubic-bezier(0.34,1.2,0.64,1) 0.2s both;
     }
-    .auth-card h2 { font-size: 1.6rem; font-weight: 600; color: #fff; margin-bottom: 0.25rem; }
-    .auth-card .subtitle { font-size: 0.875rem; color: rgba(255,255,255,0.45); margin-bottom: 1.75rem; }
-    .auth-card label { color: rgba(255,255,255,0.75); font-size: 0.85rem; font-weight: 400; margin-bottom: 0.3rem; }
-    .auth-card .form-control,
-    .auth-card input[type=text],
-    .auth-card input[type=password] {
-        background: rgba(255,255,255,0.07);
-        border: 1px solid rgba(255,255,255,0.15);
-        color: #fff; border-radius: 8px; padding: 0.6rem 0.9rem;
+    @keyframes cardIn {
+        from { opacity:0; transform: translateY(30px) scale(0.97); }
+        to   { opacity:1; transform: translateY(0) scale(1); }
     }
-    .auth-card .form-control:focus {
-        background: rgba(255,255,255,0.12); border-color: #60a5fa;
-        box-shadow: 0 0 0 3px rgba(96,165,250,0.2); color: #fff;
+
+    .auth-eyebrow {
+        font-size: 0.65rem; letter-spacing: 0.18em;
+        text-transform: uppercase; color: #a89070;
+        margin-bottom: 0.75rem;
     }
-    .auth-card .form-control::placeholder { color: rgba(255,255,255,0.3); }
-    .auth-card small, .auth-card .helptext { color: rgba(255,255,255,0.3) !important; font-size: 0.78rem; }
-    .auth-card .invalid-feedback, .auth-card .errorlist li { color: #ff6b6b; font-size: 0.8rem; list-style: none; }
-    .auth-card .errorlist { padding: 0; margin: 0.25rem 0 0; }
-    .alert-danger {
-        background: rgba(255,107,107,0.15); border: 1px solid rgba(255,107,107,0.3);
-        color: #ff9999; border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; margin-bottom: 1rem;
+    .auth-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.2rem; font-weight: 400;
+        color: #3d2c1a; margin: 0 0 0.25rem;
+        line-height: 1.1;
     }
-    .btn-login {
-        width: 100%; padding: 0.7rem;
-        background: linear-gradient(135deg, #3b82f6, #6366f1);
-        border: none; border-radius: 8px; color: #fff;
-        font-size: 0.95rem; font-weight: 600; letter-spacing: 0.03em;
-        cursor: pointer; transition: opacity 0.2s, transform 0.1s; margin-top: 0.5rem;
+    .auth-title em { color: #c47d45; font-style: italic; }
+    .auth-sub { font-size: 0.82rem; color: #a89070; margin-bottom: 2rem; }
+
+    .error-box {
+        background: #faeae8; border: 1px solid rgba(139,58,42,0.2);
+        border-radius: 2px; padding: 0.75rem 1rem;
+        color: #8b3a2a; font-size: 0.82rem; margin-bottom: 1.25rem;
+        animation: shake 0.4s ease;
     }
-    .btn-login:hover { opacity: 0.9; transform: translateY(-1px); }
-    .register-link { text-align: center; margin-top: 1.25rem; font-size: 0.85rem; color: rgba(255,255,255,0.4); }
-    .register-link a { color: #93c5fd; text-decoration: none; }
-    .register-link a:hover { text-decoration: underline; }
+    @keyframes shake {
+        0%,100%{transform:translateX(0)}
+        25%{transform:translateX(-6px)}
+        75%{transform:translateX(6px)}
+    }
+
+    .auth-divider { border:none; border-top: 1px solid rgba(87,61,33,0.1); margin: 1.75rem 0; }
+    .auth-link { text-align: center; font-size: 0.8rem; color: #a89070; }
+    .auth-link a { color: #3d2c1a; text-decoration: underline; text-underline-offset: 3px; }
+
+    /* Luciérnaga flotante decorativa */
+    .ff-deco {
+        position: absolute; width: 8px; height: 8px;
+        background: #f0c040; border-radius: 50%;
+        box-shadow: 0 0 12px 5px rgba(240,192,64,0.5);
+        pointer-events: none; animation: ffFloat var(--d,4s) ease-in-out infinite var(--delay,0s);
+    }
+    @keyframes ffFloat {
+        0%,100%{ opacity:0; transform:translate(0,0); }
+        30%{ opacity:1; }
+        70%{ opacity:0.8; }
+        100%{ opacity:0; transform:translate(var(--tx,10px),var(--ty,-30px)); }
+    }
 </style>
 {% endblock %}
 
+{% block header %}{% endblock %}
+{% block subheader %}{% endblock %}
+
 {% block contenido %}
-<div class="auth-card">
-    <h2>Iniciar sesión</h2>
-    <p class="subtitle">Ingresa tus credenciales para continuar</p>
+<div class="auth-scene">
+    <canvas id="auth-canvas"></canvas>
 
-    {% if form.errors %}
-    <div class="alert-danger">Usuario o contraseña incorrectos. Intenta de nuevo.</div>
-    {% endif %}
+    <div class="auth-card" id="auth-card">
+        <div class="auth-eyebrow">Festival Internacional de las Luciérnagas</div>
+        <h1 class="auth-title">Bienvenido<br><em>de vuelta</em></h1>
+        <p class="auth-sub">Ingresa tus credenciales para continuar</p>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form|crispy }}
-        <button type="submit" class="btn-login">Ingresar</button>
-    </form>
-    <p class="register-link">
-        ¿No tienes cuenta? <a href="{% url 'usuarios:registro' %}">Regístrate</a>
-    </p>
+        {% if form.errors %}
+        <div class="error-box">Usuario o contraseña incorrectos. Intenta de nuevo.</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn-primary-organic" style="margin-top:1.25rem;">
+                Ingresar
+            </button>
+        </form>
+
+        <hr class="auth-divider">
+        <p class="auth-link">¿No tienes cuenta? <a href="{% url 'usuarios:registro' %}">Regístrate aquí</a></p>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    window.OrganicCanvas('auth-canvas', { numFFs:50, numLeaves:10, numBF:3 });
+});
+</script>
 {% endblock %}

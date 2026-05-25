@@ -1,68 +1,599 @@
 {% extends "base.html" %}
 {% block titulo %}Inicio — Festival Luciérnagas 2026{% endblock %}
-{% block header %}Festival Internacional de las Luciérnagas 2026{% endblock %}
 
 {% block estilos %}
 <style>
-    main { display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem 4rem; }
-    .hero-card {
-        background: rgba(255,255,255,0.05);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 16px; padding: 3rem 2.5rem;
-        max-width: 640px; width: 100%; text-align: center;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.4);
-        margin-bottom: 2rem;
+    header.base-header { display: none; }
+    nav.base-nav { background: transparent; border-bottom: none; mix-blend-mode: multiply; }
+    nav.base-nav .brand, nav.base-nav a, nav.base-nav form button { color: #3d2c1a; }
+    main { padding: 0; overflow-x: hidden; }
+
+    /* ── HERO FULL ── */
+    .hero {
+        position: relative; height: 100vh; min-height: 600px;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden; background: #c8bc96;
     }
-    .hero-card .emoji { font-size: 3.5rem; margin-bottom: 1rem; }
-    .hero-card h2 { color: #f0c040; font-size: 1.6rem; font-weight: 600; margin-bottom: 0.75rem; }
-    .hero-card p { color: rgba(255,255,255,0.65); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.5rem; }
-    .btn-mapa {
-        display: inline-block; padding: 0.75rem 2rem;
-        background: linear-gradient(135deg, #f0c040, #f97316);
-        border-radius: 8px; color: #1a1a2e; font-weight: 600;
-        text-decoration: none; font-size: 0.95rem; transition: opacity 0.2s, transform 0.1s;
+    #hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    .hero-content {
+        position: relative; z-index: 10;
+        text-align: center; padding: 2rem;
+        pointer-events: none;
     }
-    .btn-mapa:hover { opacity: 0.9; transform: translateY(-1px); color: #1a1a2e; }
-    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; max-width: 640px; width: 100%; }
-    .info-item {
-        background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 12px; padding: 1.25rem; text-align: center;
+    .hero-eyebrow {
+        font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+        color: rgba(61,44,26,0.7); margin-bottom: 1rem;
+        animation: fadeDown 1s ease 0.3s both;
     }
-    .info-item .icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
-    .info-item h4 { color: #fff; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.25rem; }
-    .info-item p { color: rgba(255,255,255,0.5); font-size: 0.8rem; margin: 0; }
+    .hero-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(3rem, 8vw, 7rem);
+        font-weight: 400; line-height: 1.0;
+        color: #3d2c1a; margin: 0 0 1.5rem;
+        animation: fadeDown 1s ease 0.5s both;
+    }
+    .hero-title em { color: #c47d45; font-style: italic; }
+    .hero-sub {
+        font-size: 0.88rem; color: rgba(61,44,26,0.65);
+        letter-spacing: 0.06em; margin-bottom: 2rem;
+        animation: fadeDown 1s ease 0.7s both;
+    }
+    .hero-cta {
+        pointer-events: all;
+        display: inline-block; padding: 0.85rem 2.5rem;
+        background: #3d2c1a; color: #ece0d2 !important;
+        text-decoration: none; font-size: 0.75rem;
+        letter-spacing: 0.14em; text-transform: uppercase;
+        border-radius: 2px; transition: background 0.25s, transform 0.15s;
+        animation: fadeDown 1s ease 0.9s both;
+    }
+    .hero-cta:hover { background: #c47d45; transform: translateY(-2px); }
+
+    .scroll-hint {
+        position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+        z-index: 10; animation: bounce 2s ease-in-out infinite;
+        font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+        color: rgba(61,44,26,0.5); text-align: center;
+    }
+    .scroll-hint::before {
+        content: ''; display: block; width: 1px; height: 40px;
+        background: rgba(61,44,26,0.3); margin: 0 auto 0.5rem;
+    }
+    @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+    @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── TICKER ── */
+    .ticker-wrap { background: #3d2c1a; overflow: hidden; padding: 0.65rem 0; }
+    .ticker-track { display: inline-block; white-space: nowrap; animation: ticker 28s linear infinite; }
+    .ticker-track span { display: inline-block; color: #ece0d2; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0 2rem; }
+    .ticker-track span.dot { color: #e3a36e; }
+    @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* ── SECCIONES ── */
+    .s-about {
+        display: grid; grid-template-columns: 1fr 1fr;
+        min-height: 520px; background: #ece0d2;
+        border-bottom: 1px solid rgba(87,61,33,0.12);
+    }
+    .s-about-visual {
+        position: relative; overflow: hidden; background: #c8bc96;
+        cursor: none;
+    }
+    #about-canvas { width: 100%; height: 100%; display: block; }
+    .s-about-text {
+        padding: 5rem 4rem; display: flex;
+        flex-direction: column; justify-content: center;
+    }
+    .s-about-text .eyebrow { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: #a89070; margin-bottom: 1.5rem; }
+    .s-about-text h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem,3vw,2.8rem); font-weight: 400; color: #3d2c1a; margin: 0 0 1.5rem; line-height: 1.2; }
+    .s-about-text p { color: #7a6550; font-size: 0.88rem; line-height: 1.9; margin-bottom: 2rem; }
+
+    /* ── GRID PARQUES ── */
+    .s-parques { padding: 5rem 3rem; background: #faf7f3; border-bottom: 1px solid rgba(87,61,33,0.1); }
+    .s-parques h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem,3vw,2.6rem); font-weight: 400; color: #3d2c1a; text-align: center; margin-bottom: 0.5rem; }
+    .s-parques .sub { text-align: center; color: #a89070; font-size: 0.8rem; letter-spacing: 0.08em; margin-bottom: 3rem; }
+    .parques-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); gap: 1px; background: rgba(87,61,33,0.1); max-width: 1100px; margin: 0 auto; }
+    .parque-card {
+        background: #faf7f3; padding: 2.5rem 2rem;
+        transition: background 0.3s; cursor: default; position: relative; overflow: hidden;
+    }
+    .parque-card::before {
+        content: ''; position: absolute; bottom: 0; left: 0;
+        width: 100%; height: 0; background: #3d2c1a;
+        transition: height 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    .parque-card:hover::before { height: 3px; }
+    .parque-card .pc-num { font-family: 'Playfair Display', serif; font-size: 3rem; color: rgba(87,61,33,0.08); font-weight: 400; line-height: 1; margin-bottom: 1rem; }
+    .parque-card h4 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 400; color: #3d2c1a; margin-bottom: 0.5rem; }
+    .parque-card p { font-size: 0.8rem; color: #a89070; line-height: 1.6; margin: 0; }
+    .parque-card .pc-tag { display: inline-block; margin-top: 1rem; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: #8a9e7a; border: 1px solid rgba(138,158,122,0.4); padding: 0.2rem 0.6rem; border-radius: 20px; }
+
+    /* ── CTA OSCURO ── */
+    .s-cta {
+        background: #2a1e0f; padding: 6rem 2rem;
+        text-align: center; position: relative; overflow: hidden;
+    }
+    #cta-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.4; }
+    .s-cta-content { position: relative; z-index: 2; }
+    .s-cta h2 { font-family: 'Playfair Display', serif; font-size: clamp(2rem,5vw,4rem); font-weight: 400; color: #ece0d2; margin: 0 0 1rem; line-height: 1.1; }
+    .s-cta h2 em { color: #e3a36e; }
+    .s-cta p { color: rgba(236,224,210,0.55); font-size: 0.88rem; margin-bottom: 2.5rem; letter-spacing: 0.04em; max-width: 400px; margin-left: auto; margin-right: auto; }
+    .s-cta .btn-light { display: inline-block; padding: 0.85rem 2.5rem; background: #ece0d2; color: #3d2c1a !important; text-decoration: none; font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; transition: background 0.25s, transform 0.15s; margin: 0.4rem; }
+    .s-cta .btn-light:hover { background: #e3a36e; transform: translateY(-2px); }
+    .s-cta .btn-outline { display: inline-block; padding: 0.85rem 2.5rem; border: 1px solid rgba(236,224,210,0.3); color: #ece0d2 !important; text-decoration: none; font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; transition: all 0.25s; margin: 0.4rem; }
+    .s-cta .btn-outline:hover { border-color: #e3a36e; color: #e3a36e !important; }
+
+    /* ── FEATURES ── */
+    .s-features { display: grid; grid-template-columns: repeat(4,1fr); background: #ece0d2; border-top: 1px solid rgba(87,61,33,0.12); }
+    .feat-item { padding: 3rem 2rem; border-right: 1px solid rgba(87,61,33,0.1); text-align: center; transition: background 0.25s; }
+    .feat-item:last-child { border-right: none; }
+    .feat-item:hover { background: #ddd0bc; }
+    .feat-icon { width: 52px; height: 52px; border-radius: 50%; background: rgba(87,61,33,0.08); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-size: 1.4rem; transition: transform 0.3s; }
+    .feat-item:hover .feat-icon { transform: rotate(10deg) scale(1.1); }
+    .feat-item h4 { font-family: 'Playfair Display', serif; color: #3d2c1a; font-size: 0.95rem; font-weight: 400; margin-bottom: 0.4rem; }
+    .feat-item p { font-size: 0.78rem; color: #a89070; margin: 0; line-height: 1.6; }
+
+    /* ── FOOTER STRIP ── */
+    .s-footer-strip { background: #3d2c1a; padding: 2rem; text-align: center; }
+    .s-footer-strip p { color: rgba(236,224,210,0.45); font-size: 0.72rem; letter-spacing: 0.1em; margin: 0; }
+
+    @media(max-width: 768px) {
+        .s-about { grid-template-columns: 1fr; }
+        .s-about-visual { height: 300px; }
+        .s-about-text { padding: 3rem 1.5rem; }
+        .s-features { grid-template-columns: 1fr 1fr; }
+        .feat-item { border-bottom: 1px solid rgba(87,61,33,0.1); }
+    }
 </style>
 {% endblock %}
 
+{% block header %}{% endblock %}
+{% block subheader %}{% endblock %}
+
 {% block contenido %}
-<div class="hero-card">
-    <div class="emoji">🌟</div>
-    <h2>Reserva tu lugar en el festival</h2>
-    <p>Explora los parques oficiales en el mapa interactivo, conoce sus servicios y asegura tu espacio en el evento natural más esperado del año.</p>
-    <a href="{% url 'parques:mapa' %}" class="btn-mapa">Ver mapa de parques</a>
+
+<!-- HERO FULL -->
+<div class="hero">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-content">
+        <div class="hero-eyebrow">Oaxaca · México · Junio — Agosto 2026</div>
+        <h1 class="hero-title">Festival<br><em>Luciérnagas</em></h1>
+        <p class="hero-sub">El espectáculo natural más esperado del verano mexicano</p>
+        <a href="{% url 'parques:mapa' %}" class="hero-cta">Explorar parques</a>
+    </div>
+    <div class="scroll-hint">Scroll</div>
 </div>
 
-<div class="info-grid">
-    <div class="info-item">
-        <div class="icon">📅</div>
-        <h4>Temporada</h4>
-        <p>Junio — Agosto 2026</p>
-    </div>
-    <div class="info-item">
-        <div class="icon">🏕️</div>
-        <h4>Hospedaje</h4>
-        <p>Camping y cabañas disponibles</p>
-    </div>
-    <div class="info-item">
-        <div class="icon">📍</div>
-        <h4>Parques oficiales</h4>
-        <p>Ubicaciones verificadas en mapa</p>
-    </div>
-    <div class="info-item">
-        <div class="icon">✉️</div>
-        <h4>Confirmación</h4>
-        <p>Correo automático al reservar</p>
+<!-- TICKER -->
+<div class="ticker-wrap">
+    <div class="ticker-track">
+        <span>Junio — Agosto 2026</span><span class="dot">✦</span>
+        <span>Parques oficiales</span><span class="dot">✦</span>
+        <span>Reservación en línea</span><span class="dot">✦</span>
+        <span>Cabañas y camping</span><span class="dot">✦</span>
+        <span>Confirmación por correo</span><span class="dot">✦</span>
+        <span>Disponibilidad en tiempo real</span><span class="dot">✦</span>
+        <span>Junio — Agosto 2026</span><span class="dot">✦</span>
+        <span>Parques oficiales</span><span class="dot">✦</span>
+        <span>Reservación en línea</span><span class="dot">✦</span>
+        <span>Cabañas y camping</span><span class="dot">✦</span>
+        <span>Confirmación por correo</span><span class="dot">✦</span>
+        <span>Disponibilidad en tiempo real</span><span class="dot">✦</span>
     </div>
 </div>
+
+<!-- ABOUT split -->
+<div class="s-about">
+    <div class="s-about-visual">
+        <canvas id="about-canvas"></canvas>
+    </div>
+    <div class="s-about-text">
+        <div class="eyebrow">Sobre el festival</div>
+        <h2>Un fenómeno<br>natural único<br>en el mundo</h2>
+        <p>Cada verano, miles de luciérnagas sincronizan su parpadeo en los bosques de Oaxaca, creando una sinfonía de luz que ilumina la noche. El Festival Internacional de las Luciérnagas 2026 abre sus puertas para que vivas esta experiencia irrepetible.</p>
+        <a href="{% url 'parques:mapa' %}" style="display:inline-block;width:auto;padding:0.7rem 1.8rem;" class="btn-primary-organic">Ver parques disponibles</a>
+    </div>
+</div>
+
+<!-- PARQUES GRID -->
+<div class="s-parques">
+    <h2>Parques del festival</h2>
+    <p class="sub">Ubicaciones oficiales para observar las luciérnagas</p>
+    <div class="parques-grid">
+        <div class="parque-card">
+            <div class="pc-num">01</div>
+            <h4>Parque Nacional Izta-Popo</h4>
+            <p>Estado de México · Senderos iluminados y área de descanso</p>
+            <span class="pc-tag">🏕️ Camping &nbsp; 🏠 Cabañas</span>
+        </div>
+        <div class="parque-card">
+            <div class="pc-num">02</div>
+            <h4>Bosque de Tlalpan</h4>
+            <p>Ciudad de México · Zona de observación nocturna</p>
+            <span class="pc-tag">🏕️ Camping</span>
+        </div>
+        <div class="parque-card">
+            <div class="pc-num">03</div>
+            <h4>Reserva Tehuacán-Cuicatlán</h4>
+            <p>Puebla · Guías nocturnos y comedor disponible</p>
+            <span class="pc-tag">🏕️ Camping &nbsp; 🏠 Cabañas</span>
+        </div>
+        <div class="parque-card" style="background:#f5ede0;">
+            <div class="pc-num" style="color:rgba(87,61,33,0.2);">+</div>
+            <h4>Más parques</h4>
+            <p>Explora el mapa interactivo para ver todas las ubicaciones disponibles</p>
+            <a href="{% url 'parques:mapa' %}" style="display:inline-block;margin-top:1rem;color:#3d2c1a;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid currentColor;text-decoration:none;">Ver mapa →</a>
+        </div>
+    </div>
+</div>
+
+<!-- CTA OSCURO -->
+<div class="s-cta">
+    <canvas id="cta-canvas"></canvas>
+    <div class="s-cta-content">
+        <h2>Reserva tu<br><em>lugar hoy</em></h2>
+        <p>Consulta disponibilidad en tiempo real. Los espacios son limitados.</p>
+        <div>
+            <a href="{% url 'parques:mapa' %}" class="btn-light">Ver parques</a>
+            {% if not user.is_authenticated %}
+            <a href="{% url 'usuarios:registro' %}" class="btn-outline">Crear cuenta</a>
+            {% else %}
+            <a href="{% url 'reservaciones:mis_reservaciones' %}" class="btn-outline">Mis reservaciones</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- FEATURES -->
+<div class="s-features">
+    <div class="feat-item">
+        <div class="feat-icon">📅</div>
+        <h4>Temporada</h4>
+        <p>Jun — Ago 2026</p>
+    </div>
+    <div class="feat-item">
+        <div class="feat-icon">🏕️</div>
+        <h4>Hospedaje</h4>
+        <p>Camping y cabañas</p>
+    </div>
+    <div class="feat-item">
+        <div class="feat-icon">📍</div>
+        <h4>Mapa interactivo</h4>
+        <p>Parques verificados</p>
+    </div>
+    <div class="feat-item">
+        <div class="feat-icon">✉️</div>
+        <h4>Confirmación</h4>
+        <p>Correo automático</p>
+    </div>
+</div>
+
+<!-- FOOTER STRIP -->
+<div class="s-footer-strip">
+    <p>© 2026 MEC Solutions — Ingeniería de Software · Facultad de Ciencias · UNAM</p>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ── HERO CANVAS — luciérnagas + fondo orgánico ── */
+(function(){
+const c = document.getElementById('hero-canvas');
+if(!c) return;
+const ctx = c.getContext('2d');
+let W, H, ffs = [], leaves = [], t = 0, mouse = {x:0, y:0};
+
+function resize(){
+    W = c.width = c.offsetWidth;
+    H = c.height = c.offsetHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+c.parentElement.addEventListener('mousemove', e => {
+    const r = c.getBoundingClientRect();
+    mouse.x = e.clientX - r.left;
+    mouse.y = e.clientY - r.top;
+});
+
+/* Hojas flotantes */
+for(let i=0;i<14;i++){
+    leaves.push({
+        x: Math.random()*100, y: Math.random()*100,
+        size: 18+Math.random()*35,
+        angle: Math.random()*Math.PI*2,
+        speed: 0.0002+Math.random()*0.0004,
+        sway: Math.random()*Math.PI*2,
+        swayAmp: 0.3+Math.random()*0.5,
+        col: ['#8a9e7a','#6b7d5e','#9ead8c','#b5c4a0'][Math.floor(Math.random()*4)],
+        opacity: 0.15+Math.random()*0.3,
+    });
+}
+
+/* Luciérnagas */
+for(let i=0;i<55;i++){
+    ffs.push({
+        x: Math.random()*100, y: Math.random()*100,
+        vx: (Math.random()-0.5)*0.015,
+        vy: (Math.random()-0.5)*0.015,
+        phase: Math.random()*Math.PI*2,
+        freq: 0.4+Math.random()*0.8,
+        size: 1.5+Math.random()*2,
+        col: ['#f0c040','#ffd060','#e8b030','#ffffa0'][Math.floor(Math.random()*4)],
+    });
+}
+
+/* Mariposas */
+const butterflies = [];
+for(let i=0;i<5;i++){
+    butterflies.push({
+        x: Math.random()*100, y: 10+Math.random()*40,
+        vx: 0.008+Math.random()*0.01,
+        vy: 0, phase: Math.random()*Math.PI*2,
+        size: 12+Math.random()*10,
+        col: ['#e3a36e','#c47d45','#d4956a'][Math.floor(Math.random()*3)],
+        flapPhase: 0,
+    });
+}
+
+function drawLeaf(ctx, x, y, size, angle, col, opacity){
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.bezierCurveTo(size*0.5,-size*0.3, size*0.8,-size*0.1, size*0.9, 0);
+    ctx.bezierCurveTo(size*0.8, size*0.15, size*0.5, size*0.25, 0, 0);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.globalAlpha = opacity*0.6;
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.lineTo(size*0.85, 0);
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawButterfly(ctx, x, y, size, col, flapAngle){
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.globalAlpha = 0.55;
+    const fl = Math.abs(Math.cos(flapAngle));
+    ctx.beginPath();
+    ctx.ellipse(-size*fl*0.5, -size*0.15, size*fl*0.55, size*0.35, -0.3, 0, Math.PI*2);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(size*fl*0.5, -size*0.15, size*fl*0.55, size*0.35, 0.3, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(-size*fl*0.3, size*0.1, size*fl*0.3, size*0.2, -0.5, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(size*fl*0.3, size*0.1, size*fl*0.3, size*0.2, 0.5, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+}
+
+function draw(){
+    t += 0.008;
+    ctx.clearRect(0,0,W,H);
+
+    /* fondo orgánico */
+    const grd = ctx.createRadialGradient(W*0.35, H*0.55, 0, W*0.5, H*0.5, W*0.7);
+    grd.addColorStop(0,'#cfc098');
+    grd.addColorStop(0.5,'#c8bc96');
+    grd.addColorStop(1,'#b8ad88');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0,0,W,H);
+
+    /* hojas */
+    leaves.forEach(l => {
+        l.angle += l.speed;
+        const px = (l.x/100)*W + Math.sin(t*l.swayAmp + l.sway)*30;
+        const py = (l.y/100)*H + Math.cos(t*l.swayAmp*0.7 + l.sway)*15;
+        drawLeaf(ctx, px, py, l.size, l.angle, l.col, l.opacity);
+    });
+
+    /* mariposas */
+    butterflies.forEach(b => {
+        b.x += b.vx;
+        b.y += Math.sin(t*0.8 + b.phase)*0.08;
+        b.flapPhase += 0.18;
+        if(b.x > 110) b.x = -10;
+        drawButterfly(ctx, (b.x/100)*W, (b.y/100)*H, b.size, b.col, b.flapPhase);
+    });
+
+    /* luciérnagas */
+    ffs.forEach(f => {
+        f.x += f.vx + Math.sin(t*0.3 + f.phase)*0.008;
+        f.y += f.vy + Math.cos(t*0.25 + f.phase)*0.008;
+        if(f.x<0) f.x=100; if(f.x>100) f.x=0;
+        if(f.y<0) f.y=100; if(f.y>100) f.y=0;
+
+        /* repeler del mouse */
+        const mx=(mouse.x/W)*100, my=(mouse.y/H)*100;
+        const dx=f.x-mx, dy=f.y-my, dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<8){ f.vx+=dx/dist*0.004; f.vy+=dy/dist*0.004; }
+        f.vx*=0.98; f.vy*=0.98;
+
+        const brightness = (Math.sin(t*f.freq+f.phase)+1)/2;
+        if(brightness < 0.2) return;
+        const px=(f.x/100)*W, py=(f.y/100)*H;
+        const grd2 = ctx.createRadialGradient(px,py,0, px,py,f.size*4*brightness);
+        grd2.addColorStop(0, f.col);
+        grd2.addColorStop(1, 'transparent');
+        ctx.globalAlpha = brightness * 0.85;
+        ctx.beginPath();
+        ctx.arc(px, py, f.size*4*brightness, 0, Math.PI*2);
+        ctx.fillStyle = grd2;
+        ctx.fill();
+        ctx.globalAlpha = brightness;
+        ctx.beginPath();
+        ctx.arc(px, py, f.size*0.5, 0, Math.PI*2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    });
+
+    requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ── ABOUT CANVAS — luciérnagas estáticas + textura ── */
+(function(){
+const c = document.getElementById('about-canvas');
+if(!c) return;
+const ctx = c.getContext('2d');
+let W, H, ffs=[], t=0;
+
+function resize(){
+    W = c.width = c.offsetWidth;
+    H = c.height = c.offsetHeight;
+}
+resize();
+new ResizeObserver(resize).observe(c.parentElement);
+
+for(let i=0;i<35;i++){
+    ffs.push({
+        x:Math.random()*100, y:Math.random()*100,
+        vx:(Math.random()-0.5)*0.01, vy:(Math.random()-0.5)*0.01,
+        phase:Math.random()*Math.PI*2, freq:0.5+Math.random()*0.8,
+        size:1.2+Math.random()*2,
+    });
+}
+
+/* texto grande decorativo */
+function draw(){
+    t+=0.008;
+    ctx.clearRect(0,0,W,H);
+    const g=ctx.createLinearGradient(0,0,W,H);
+    g.addColorStop(0,'#c0b490'); g.addColorStop(1,'#b0a47e');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+    /* texto de fondo */
+    ctx.save();
+    ctx.font=`${W*0.55}px 'Playfair Display',serif`;
+    ctx.fillStyle='rgba(87,61,33,0.07)';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🌿', W/2, H/2);
+    ctx.restore();
+
+    ffs.forEach(f=>{
+        f.x+=f.vx; f.y+=f.vy;
+        if(f.x<0)f.x=100; if(f.x>100)f.x=0;
+        if(f.y<0)f.y=100; if(f.y>100)f.y=0;
+        const b=(Math.sin(t*f.freq+f.phase)+1)/2;
+        if(b<0.15)return;
+        const px=(f.x/100)*W, py=(f.y/100)*H;
+        const grd=ctx.createRadialGradient(px,py,0,px,py,f.size*5*b);
+        grd.addColorStop(0,'#f0c040'); grd.addColorStop(1,'transparent');
+        ctx.globalAlpha=b*0.7;
+        ctx.beginPath(); ctx.arc(px,py,f.size*5*b,0,Math.PI*2);
+        ctx.fillStyle=grd; ctx.fill();
+        ctx.globalAlpha=b;
+        ctx.beginPath(); ctx.arc(px,py,f.size*0.5,0,Math.PI*2);
+        ctx.fillStyle='#fff'; ctx.fill();
+        ctx.globalAlpha=1;
+    });
+    requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ── CTA CANVAS — campo de estrellas ── */
+(function(){
+const c = document.getElementById('cta-canvas');
+if(!c) return;
+const ctx = c.getContext('2d');
+let W, H, stars=[], ffs=[], t=0;
+
+function resize(){
+    W=c.width=c.offsetWidth;
+    H=c.height=c.offsetHeight;
+}
+resize();
+window.addEventListener('resize',resize);
+
+for(let i=0;i<80;i++) stars.push({x:Math.random()*100,y:Math.random()*100,size:0.5+Math.random()*1.5,opacity:0.2+Math.random()*0.6});
+for(let i=0;i<60;i++) ffs.push({x:Math.random()*100,y:Math.random()*100,vx:(Math.random()-0.5)*0.012,vy:(Math.random()-0.5)*0.012,phase:Math.random()*Math.PI*2,freq:0.4+Math.random()*0.9,size:1+Math.random()*2.5});
+
+function draw(){
+    t+=0.007;
+    ctx.clearRect(0,0,W,H);
+    stars.forEach(s=>{
+        ctx.globalAlpha=s.opacity*(0.7+Math.sin(t+s.x)*0.3);
+        ctx.beginPath(); ctx.arc((s.x/100)*W,(s.y/100)*H,s.size,0,Math.PI*2);
+        ctx.fillStyle='#ece0d2'; ctx.fill();
+    });
+    ffs.forEach(f=>{
+        f.x+=f.vx; f.y+=f.vy;
+        if(f.x<0)f.x=100; if(f.x>100)f.x=0;
+        if(f.y<0)f.y=100; if(f.y>100)f.y=0;
+        const b=(Math.sin(t*f.freq+f.phase)+1)/2;
+        if(b<0.2)return;
+        const px=(f.x/100)*W, py=(f.y/100)*H;
+        const grd=ctx.createRadialGradient(px,py,0,px,py,f.size*5*b);
+        grd.addColorStop(0,'#f0c040'); grd.addColorStop(1,'transparent');
+        ctx.globalAlpha=b*0.9;
+        ctx.beginPath(); ctx.arc(px,py,f.size*5*b,0,Math.PI*2);
+        ctx.fillStyle=grd; ctx.fill();
+        ctx.globalAlpha=b;
+        ctx.beginPath(); ctx.arc(px,py,f.size*0.6,0,Math.PI*2);
+        ctx.fillStyle='#ffffc0'; ctx.fill();
+        ctx.globalAlpha=1;
+    });
+    requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ── CURSOR PERSONALIZADO en about ── */
+(function(){
+const visual = document.querySelector('.s-about-visual');
+if(!visual)return;
+const cursor = document.createElement('div');
+cursor.style.cssText='position:absolute;pointer-events:none;z-index:10;width:10px;height:10px;background:#f0c040;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 12px 4px rgba(240,192,64,0.6);transition:transform 0.1s;opacity:0;';
+visual.appendChild(cursor);
+visual.addEventListener('mouseenter',()=>{cursor.style.opacity='1';});
+visual.addEventListener('mouseleave',()=>{cursor.style.opacity='0';});
+visual.addEventListener('mousemove',e=>{
+    const r=visual.getBoundingClientRect();
+    cursor.style.left=(e.clientX-r.left)+'px';
+    cursor.style.top=(e.clientY-r.top)+'px';
+});
+})();
+
+/* ── PARALLAX en secciones ── */
+window.addEventListener('scroll',()=>{
+    const y=window.scrollY;
+    const hero=document.querySelector('.hero-content');
+    if(hero) hero.style.transform=`translateY(${y*0.25}px)`;
+});
+
+/* ── ANIMACIÓN NÚMEROS en cards ── */
+const numObs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+        if(e.isIntersecting){
+            e.target.style.transition='opacity 0.8s ease, transform 0.8s ease';
+            e.target.style.opacity='1';
+            e.target.style.transform='translateY(0)';
+            numObs.unobserve(e.target);
+        }
+    });
+},{threshold:0.2});
+
+document.querySelectorAll('.parque-card,.feat-item').forEach((el,i)=>{
+    el.style.opacity='0';
+    el.style.transform='translateY(30px)';
+    el.style.transitionDelay=`${i*0.1}s`;
+    numObs.observe(el);
+});
+</script>
 {% endblock %}

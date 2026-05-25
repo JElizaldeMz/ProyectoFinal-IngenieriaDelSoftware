@@ -1,44 +1,166 @@
 {% extends "base.html" %}
 {% block titulo %}Cancelar Reservación — Luciérnagas 2026{% endblock %}
-{% block header %}Cancelar Reservación{% endblock %}
 
 {% block estilos %}
 <style>
-    main { display: flex; justify-content: center; padding: 2rem 1rem 4rem; }
-    .cancel-card {
-        background: rgba(255,255,255,0.05); backdrop-filter: blur(12px);
-        border: 1px solid rgba(239,68,68,0.25); border-radius: 16px;
-        padding: 2.5rem; max-width: 480px; width: 100%;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.4); text-align: center;
+    header.base-header { display:none; }
+    nav.base-nav { background:rgba(200,188,150,0.88); backdrop-filter:blur(10px); }
+    main { padding:0; overflow:hidden; }
+
+    .cancel-scene {
+        position:relative; min-height:100vh;
+        display:flex; align-items:center; justify-content:center;
+        padding:5rem 1.5rem 4rem;
     }
-    .cancel-card .icon { font-size: 3rem; margin-bottom: 1rem; }
-    .cancel-card h2 { color: #fca5a5; font-size: 1.4rem; font-weight: 600; margin-bottom: 0.5rem; }
-    .cancel-card p { color: rgba(255,255,255,0.55); font-size: 0.9rem; margin-bottom: 1.5rem; }
-    .res-info { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; text-align: left; }
-    .res-info p { margin: 0.25rem 0; font-size: 0.85rem; color: rgba(255,255,255,0.65); }
-    .btn-row { display: flex; gap: 1rem; justify-content: center; }
-    .btn-confirmar { padding: 0.65rem 1.5rem; background: linear-gradient(135deg, #ef4444, #b91c1c); border: none; border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer; }
-    .btn-volver { padding: 0.65rem 1.5rem; background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: rgba(255,255,255,0.6); text-decoration: none; font-weight: 600; }
-    .btn-volver:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
+    #cancel-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+
+    .cancel-card {
+        position:relative; z-index:2;
+        width:min(500px,94vw);
+        background:rgba(250,247,243,0.97);
+        border:1px solid rgba(87,61,33,0.12);
+        border-radius:4px;
+        box-shadow:0 20px 60px rgba(0,0,0,0.12);
+        overflow:hidden;
+        animation:cardIn .6s cubic-bezier(.34,1.2,.64,1) .15s both;
+    }
+    @keyframes cardIn { from{opacity:0;transform:translateY(24px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+    .cancel-header {
+        background:linear-gradient(135deg,#573d21,#3d2c1a);
+        padding:2.5rem 2.5rem 2rem; text-align:center;
+    }
+    .cancel-header .warn-icon {
+        width:54px; height:54px; margin:0 auto 1.1rem;
+        background:rgba(227,163,110,0.2); border:1px solid rgba(227,163,110,0.35);
+        border-radius:50%; display:flex; align-items:center; justify-content:center;
+        font-size:1.5rem;
+        animation:popIn .6s cubic-bezier(.34,1.56,.64,1) .5s both;
+    }
+    @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
+    .cancel-header .eyebrow { font-size:.62rem; letter-spacing:.16em; text-transform:uppercase; color:rgba(236,224,210,.5); margin-bottom:.6rem; }
+    .cancel-header h1 { font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:400; color:#ece0d2; margin:0; line-height:1.15; }
+    .cancel-header h1 em { color:#e3a36e; font-style:italic; }
+
+    .cancel-body { padding:2rem 2.5rem; }
+
+    .aviso-texto {
+        font-size:.85rem; color:#7a6550; line-height:1.75;
+        margin-bottom:1.5rem; text-align:center;
+    }
+
+    .res-resumen {
+        background:rgba(87,61,33,0.04); border:1px solid rgba(87,61,33,0.1);
+        border-radius:2px; overflow:hidden; margin-bottom:1.75rem;
+    }
+    .res-row { display:flex; justify-content:space-between; padding:.85rem 1.25rem; border-bottom:1px solid rgba(87,61,33,0.07); }
+    .res-row:last-child { border-bottom:none; }
+    .res-row .rk { font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; color:#a89070; }
+    .res-row .rv { font-size:.88rem; color:#3d2c1a; font-weight:500; }
+
+    .btn-row { display:flex; gap:.75rem; }
+    .btn-row a, .btn-row form { flex:1; }
+    .btn-row form button { width:100%; }
+
+    /* Luciérnagas flotantes decorativas alrededor de la card */
+    .ff-float {
+        position:absolute; border-radius:50%;
+        background:#f0c040;
+        box-shadow:0 0 10px 4px rgba(240,192,64,.55);
+        pointer-events:none; z-index:1;
+        animation:ffAnim var(--d,4s) ease-in-out infinite var(--del,0s);
+    }
+    @keyframes ffAnim {
+        0%,100%{ opacity:0; transform:translate(0,0) scale(.8); }
+        40%{ opacity:1; transform:translate(var(--tx,8px),var(--ty,-15px)) scale(1.2); }
+        80%{ opacity:.6; transform:translate(var(--tx2,12px),var(--ty2,-28px)) scale(.9); }
+    }
 </style>
 {% endblock %}
 
+{% block header %}{% endblock %}
+{% block subheader %}{% endblock %}
+
 {% block contenido %}
-<div class="cancel-card">
-    <div class="icon">⚠️</div>
-    <h2>¿Cancelar esta reservación?</h2>
-    <p>Esta acción no se puede deshacer. El espacio quedará disponible para otros visitantes.</p>
-    <div class="res-info">
-        <p><strong>Parque:</strong> {{ reservacion.parque.nombre }}</p>
-        <p><strong>Fechas:</strong> {{ reservacion.fecha_inicio }} → {{ reservacion.fecha_termino }}</p>
-        <p><strong>Tipo:</strong> {{ reservacion.get_tipo_visita_display }}</p>
-    </div>
-    <div class="btn-row">
-        <a href="{% url 'reservaciones:mis_reservaciones' %}" class="btn-volver">No, conservar</a>
-        <form method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn-confirmar">Sí, cancelar</button>
-        </form>
+<div class="cancel-scene" id="cancel-scene">
+    <canvas id="cancel-canvas"></canvas>
+
+    <div class="cancel-card" id="cancel-card">
+        <div class="cancel-header">
+            <div class="warn-icon">⚠</div>
+            <div class="eyebrow">Festival Internacional de las Luciérnagas · 2026</div>
+            <h1>¿Cancelar<br><em>reservación?</em></h1>
+        </div>
+
+        <div class="cancel-body">
+            <p class="aviso-texto">
+                Esta acción no se puede deshacer. El espacio quedará disponible para otros visitantes del festival.
+            </p>
+
+            <div class="res-resumen">
+                <div class="res-row">
+                    <span class="rk">Parque</span>
+                    <span class="rv">{{ reservacion.parque.nombre }}</span>
+                </div>
+                <div class="res-row">
+                    <span class="rk">Tipo de visita</span>
+                    <span class="rv">{{ reservacion.get_tipo_visita_display }}</span>
+                </div>
+                <div class="res-row">
+                    <span class="rk">Fecha inicio</span>
+                    <span class="rv">{{ reservacion.fecha_inicio }}</span>
+                </div>
+                <div class="res-row">
+                    <span class="rk">Fecha término</span>
+                    <span class="rv">{{ reservacion.fecha_termino }}</span>
+                </div>
+                <div class="res-row">
+                    <span class="rk">Personas</span>
+                    <span class="rv">{{ reservacion.num_personas }}</span>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <a href="{% url 'reservaciones:mis_reservaciones' %}" class="btn-secondary-organic">
+                    Conservar
+                </a>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-danger-organic">
+                        Sí, cancelar
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    /* Canvas orgánico de fondo con más luciérnagas */
+    window.OrganicCanvas('cancel-canvas', { numFFs:60, numLeaves:14, numBF:5 });
+
+    /* Luciérnagas decorativas flotando cerca de la card */
+    const scene = document.getElementById('cancel-scene');
+    for(let i = 0; i < 16; i++){
+        const ff = document.createElement('div');
+        ff.className = 'ff-float';
+        const size = 5 + Math.random() * 5;
+        ff.style.cssText = `
+            width:${size}px; height:${size}px;
+            left:${5 + Math.random()*90}%;
+            top:${5 + Math.random()*90}%;
+            --d:${3+Math.random()*4}s;
+            --del:${Math.random()*4}s;
+            --tx:${(Math.random()-.5)*30}px;
+            --ty:${-10-Math.random()*30}px;
+            --tx2:${(Math.random()-.5)*40}px;
+            --ty2:${-20-Math.random()*40}px;
+        `;
+        scene.appendChild(ff);
+    }
+});
+</script>
 {% endblock %}

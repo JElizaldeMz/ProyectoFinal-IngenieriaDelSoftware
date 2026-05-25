@@ -74,11 +74,18 @@ def mis_reservaciones(request):
 @login_required
 def cancelar_reservacion(request, pk):
     cliente = _get_or_create_cliente(request.user)
-    reservacion = get_object_or_404(Reservacion, pk=pk, cliente=cliente, estado='activa')
+    # Buscar la reservación sin filtrar por estado para dar mejor mensaje de error
+    reservacion = get_object_or_404(Reservacion, pk=pk, cliente=cliente)
+
+    if reservacion.estado != 'activa':
+        messages.error(request, 'Esta reservación ya fue cancelada o no está activa.')
+        return redirect('reservaciones:mis_reservaciones')
+
     if request.method == 'POST':
         reservacion.cancelar()
         messages.success(request, 'Tu reservación fue cancelada exitosamente.')
         return redirect('reservaciones:mis_reservaciones')
+
     return render(request, 'reservaciones/confirmar_cancelacion.html', {'reservacion': reservacion})
 
 

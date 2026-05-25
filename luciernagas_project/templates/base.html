@@ -6,46 +6,121 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block titulo %}Festival Luciérnagas 2026{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            min-height: 100vh;
-            color: #e0e0e0;
+        :root {
+            --cream:       #ece0d2;
+            --cream-dark:  #ddd0bc;
+            --brown:       #573d21;
+            --brown-deep:  #3d2c1a;
+            --brown-light: #7a5c3a;
+            --orange:      #e3a36e;
+            --orange-dark: #c47d45;
+            --green:       #8a9e7a;
+            --green-dark:  #6b7d5e;
+            --text:        #3d2c1a;
+            --text-soft:   #7a6550;
+            --text-muted:  #a89070;
+            --white:       #faf7f3;
         }
+        * { box-sizing: border-box; }
+        body { margin:0; font-family:'Inter',sans-serif; background:var(--cream); color:var(--text); font-size:15px; }
+
         nav.base-nav {
-            position: fixed; top: 0; left: 0;
-            width: 100%; z-index: 9000;
-            display: flex; gap: 1.5rem; align-items: center;
-            padding: 0.75rem 2rem;
-            background: rgba(15, 12, 41, 0.85);
-            backdrop-filter: blur(8px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-            box-sizing: border-box;
+            position:fixed; top:0; left:0; width:100%; z-index:9000;
+            display:flex; align-items:center; padding:0 2.5rem; height:56px;
+            background:rgba(236,224,210,0.92); backdrop-filter:blur(10px);
+            border-bottom:1px solid rgba(87,61,33,0.1);
         }
         nav.base-nav .brand {
-            color: #f0c040; font-weight: 600; font-size: 1rem;
-            letter-spacing: 0.05em; text-decoration: none; margin-right: auto;
+            font-family:'Playfair Display',serif; font-size:1.05rem;
+            color:var(--brown-deep); text-decoration:none; margin-right:auto; letter-spacing:0.02em;
         }
         nav.base-nav a {
-            color: #c0b8e0; text-decoration: none; font-size: 0.88rem;
-            letter-spacing: 0.06em; text-transform: uppercase; transition: color 0.2s;
+            color:var(--text-muted); text-decoration:none; font-size:0.78rem;
+            letter-spacing:0.1em; text-transform:uppercase; margin-left:2rem;
+            transition:color .2s; font-weight:500; position:relative;
         }
-        nav.base-nav a:hover { color: #ffffff; }
-        header.base-header { padding: 5.5rem 2rem 1.5rem; text-align: center; }
-        header.base-header h1 { margin: 0; font-size: 2rem; font-weight: 600; color: #fff; }
-        main { padding: 2rem 1rem 4rem; }
-        footer.base-footer { text-align: center; padding: 1.5rem; font-size: 0.8rem; background: rgba(0,0,0,0.5); color: #888; margin-top: 3rem; }
-        .messages-container { max-width: 600px; margin: 0 auto 1rem; }
-        .alert { border-radius: 8px; font-size: 0.875rem; }
+        nav.base-nav a::after { content:''; position:absolute; bottom:-2px; left:0; width:0; height:1px; background:var(--orange); transition:width .25s; }
+        nav.base-nav a:hover { color:var(--brown-deep); }
+        nav.base-nav a:hover::after { width:100%; }
+        nav.base-nav form { margin:0 0 0 2rem; }
+        nav.base-nav form button {
+            background:none; border:none; padding:0; color:var(--text-muted);
+            font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase;
+            cursor:pointer; font-weight:500; font-family:'Inter',sans-serif; transition:color .2s;
+        }
+        nav.base-nav form button:hover { color:var(--brown-deep); }
+
+        header.base-header { padding:5rem 2rem 1.5rem; text-align:center; }
+        header.base-header h1 { font-family:'Playfair Display',serif; font-size:2.6rem; font-weight:400; color:var(--brown-deep); margin:0; line-height:1.2; }
+        header.base-header .subtitle-nav { font-size:0.72rem; color:var(--text-muted); letter-spacing:0.12em; text-transform:uppercase; margin-top:0.5rem; }
+
+        main { padding:1rem 1rem 5rem; }
+
+        /* Mensajes */
+        .messages-container { max-width:600px; margin:0 auto 1.5rem; }
+        .alert { border-radius:2px; font-size:0.85rem; border:1px solid rgba(87,61,33,0.15); background:var(--white); color:var(--brown); }
+        .alert-success { background:#eef4e8; border-color:rgba(138,158,122,0.4); color:var(--green-dark); }
+        .alert-danger,.alert-error { background:#faeae8; border-color:rgba(180,80,60,0.3); color:#8b3a2a; }
+
+        /* Botones */
+        .btn-primary-organic {
+            display:inline-block; padding:0.75rem 2rem; background:var(--brown-deep);
+            color:var(--cream) !important; border:none; border-radius:2px;
+            font-size:0.78rem; font-weight:500; letter-spacing:0.1em; text-transform:uppercase;
+            text-decoration:none; cursor:pointer; transition:background .2s, transform .1s;
+            font-family:'Inter',sans-serif; width:100%; text-align:center;
+        }
+        .btn-primary-organic:hover { background:var(--orange-dark); transform:translateY(-1px); color:var(--white) !important; }
+        .btn-primary-organic:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+
+        .btn-secondary-organic {
+            display:inline-block; padding:0.7rem 2rem; background:transparent;
+            color:var(--brown-deep); border:1px solid rgba(87,61,33,0.3); border-radius:2px;
+            font-size:0.78rem; font-weight:500; letter-spacing:0.1em; text-transform:uppercase;
+            text-decoration:none; cursor:pointer; transition:all .2s; font-family:'Inter',sans-serif;
+            width:100%; text-align:center;
+        }
+        .btn-secondary-organic:hover { background:var(--brown-deep); color:var(--cream); }
+
+        .btn-danger-organic {
+            display:inline-block; padding:0.7rem 2rem; background:#8b3a2a;
+            color:var(--white) !important; border:none; border-radius:2px;
+            font-size:0.78rem; font-weight:500; letter-spacing:0.1em; text-transform:uppercase;
+            text-decoration:none; cursor:pointer; transition:opacity .2s; font-family:'Inter',sans-serif;
+        }
+        .btn-danger-organic:hover { opacity:0.85; }
+
+        .btn-back { display:inline-block; margin-top:1.25rem; color:var(--text-muted); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; text-decoration:none; transition:color .2s; }
+        .btn-back:hover { color:var(--brown-deep); }
+
+        /* Forms crispy */
+        .form-control,select,textarea,input[type=text],input[type=email],input[type=password],input[type=date],input[type=number] {
+            background:var(--white) !important; border:1px solid rgba(87,61,33,0.2) !important;
+            border-radius:2px !important; color:var(--text) !important;
+            padding:0.6rem 0.9rem !important; font-family:'Inter',sans-serif !important;
+            font-size:0.9rem !important; box-shadow:none !important; transition:border-color .2s, box-shadow .2s !important;
+        }
+        .form-control:focus,select:focus,input:focus,textarea:focus {
+            border-color:var(--orange) !important;
+            box-shadow:0 0 0 3px rgba(227,163,110,0.2) !important; outline:none !important;
+        }
+        label { color:var(--text-soft) !important; font-size:0.72rem !important; letter-spacing:0.08em; text-transform:uppercase; font-weight:500 !important; }
+        .helptext,small { color:var(--text-muted) !important; font-size:0.73rem !important; }
+        .invalid-feedback,.errorlist { color:#8b3a2a !important; font-size:0.78rem; }
+        .errorlist { list-style:none; padding:0; margin:0.25rem 0 0; }
+        select option { background:var(--white); color:var(--text); }
+
+        .organic-card { background:var(--white); border:1px solid rgba(87,61,33,0.1); border-radius:2px; padding:2.5rem; }
+
+        footer.base-footer { text-align:center; padding:2rem; font-size:0.72rem; border-top:1px solid rgba(87,61,33,0.1); color:var(--text-muted); letter-spacing:0.06em; background:var(--cream); }
     </style>
     {% block estilos %}{% endblock %}
 </head>
 <body>
 <nav class="base-nav">
-    <a href="/" class="brand">🌟 Luciérnagas 2026</a>
+    <a href="/" class="brand">🌿 Luciérnagas 2026</a>
     <a href="{% url 'parques:mapa' %}">Mapa</a>
     {% if user.is_authenticated %}
         {% if not user.is_staff %}
@@ -54,15 +129,20 @@
             <a href="{% url 'parques:lista_admin' %}">Parques</a>
             <a href="{% url 'reservaciones:todas_admin' %}">Reservaciones</a>
         {% endif %}
-        <form method="post" action="{% url 'usuarios:logout' %}" style="margin:0;">{% csrf_token %}<button type="submit" style="background:none;border:none;color:#c0b8e0;font-size:0.88rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;padding:0;transition:color 0.2s;">Cerrar sesión</button></form>
+        <form method="post" action="{% url 'usuarios:logout' %}">{% csrf_token %}
+            <button type="submit">Cerrar sesión</button>
+        </form>
     {% else %}
         <a href="{% url 'usuarios:login' %}">Iniciar sesión</a>
         <a href="{% url 'usuarios:registro' %}">Registrarse</a>
     {% endif %}
 </nav>
+
 <header class="base-header">
     <h1>{% block header %}Festival Internacional de las Luciérnagas{% endblock %}</h1>
+    {% block subheader %}<p class="subtitle-nav">Oaxaca · México · Junio – Agosto 2026</p>{% endblock %}
 </header>
+
 <main>
     {% if messages %}
     <div class="messages-container">
@@ -76,10 +156,161 @@
     {% endif %}
     {% block contenido %}{% endblock %}
 </main>
+
 <footer class="base-footer">
-    <p>© 2026 MEC Solutions — Ingeniería de Software · Facultad de Ciencias · UNAM</p>
+    <p style="margin:0;">© 2026 MEC Solutions — Ingeniería de Software · Facultad de Ciencias · UNAM</p>
 </footer>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Script global de canvas orgánico reutilizable -->
+<script>
+window.OrganicCanvas = function(canvasId, opts) {
+    opts = opts || {};
+    const c = document.getElementById(canvasId);
+    if (!c) return;
+    const ctx = c.getContext('2d');
+    let W, H, t = 0;
+    const ffs = [], leaves = [], butterflies = [];
+
+    function resize() { W = c.width = c.offsetWidth; H = c.height = c.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const leafColors = ['#8a9e7a','#6b7d5e','#9ead8c','#b5c4a0'];
+    const ffColors   = ['#f0c040','#ffd060','#e8b030','#ffffa0'];
+    const bColors    = ['#e3a36e','#c47d45','#d4956a'];
+
+    const numLeaves = opts.leaves !== false ? (opts.numLeaves||16) : 0;
+    const numFFs    = opts.fireflies !== false ? (opts.numFFs||70) : 0;
+    const numBF     = opts.butterflies !== false ? (opts.numBF||7) : 0;
+
+    for(let i=0;i<numLeaves;i++) leaves.push({
+        x:Math.random()*100, y:Math.random()*100,
+        size:16+Math.random()*32, angle:Math.random()*Math.PI*2,
+        speed:0.0002+Math.random()*0.0004,
+        sway:Math.random()*Math.PI*2, swayAmp:0.3+Math.random()*0.5,
+        col:leafColors[Math.floor(Math.random()*leafColors.length)],
+        opacity:0.15+Math.random()*0.28,
+    });
+    for(let i=0;i<numFFs;i++) ffs.push({
+        x:Math.random()*100, y:Math.random()*100,
+        vx:(Math.random()-.5)*.012, vy:(Math.random()-.5)*.012,
+        phase:Math.random()*Math.PI*2, freq:.4+Math.random()*.8,
+        size:1+Math.random()*2,
+        col:ffColors[Math.floor(Math.random()*ffColors.length)],
+    });
+    /* Bichos pequeños adicionales */
+    const bugs = [];
+    const numBugs = opts.bugs !== false ? (opts.numBugs||8) : 0;
+    for(let i=0;i<numBugs;i++) bugs.push({
+        x:Math.random()*100, y:Math.random()*100,
+        vx:(Math.random()-.5)*.02, vy:(Math.random()-.5)*.015,
+        phase:Math.random()*Math.PI*2, size:2+Math.random()*3,
+        col:['#6b7d5e','#8a9e7a','#573d21','#c47d45'][Math.floor(Math.random()*4)],
+        angle:Math.random()*Math.PI*2,
+    });
+
+    for(let i=0;i<numBF;i++) butterflies.push({
+        x:Math.random()*100, y:8+Math.random()*40,
+        vx:0.007+Math.random()*0.009,
+        phase:Math.random()*Math.PI*2,
+        size:10+Math.random()*10,
+        col:bColors[Math.floor(Math.random()*bColors.length)],
+        flap:0,
+    });
+
+    function drawLeaf(x,y,sz,ang,col,op){
+        ctx.save(); ctx.globalAlpha=op; ctx.translate(x,y); ctx.rotate(ang);
+        ctx.beginPath(); ctx.moveTo(0,0);
+        ctx.bezierCurveTo(sz*.5,-sz*.3,sz*.8,-sz*.1,sz*.9,0);
+        ctx.bezierCurveTo(sz*.8,sz*.15,sz*.5,sz*.25,0,0);
+        ctx.fillStyle=col; ctx.fill(); ctx.restore();
+    }
+    function drawButterfly(x,y,sz,col,flap){
+        ctx.save(); ctx.translate(x,y); ctx.globalAlpha=0.45;
+        const f=Math.abs(Math.cos(flap));
+        ctx.fillStyle=col;
+        ctx.beginPath(); ctx.ellipse(-sz*f*.5,-sz*.15,sz*f*.5,sz*.32,-0.3,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(sz*f*.5,-sz*.15,sz*f*.5,sz*.32,0.3,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(-sz*f*.3,sz*.1,sz*f*.28,sz*.18,-0.5,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(sz*f*.3,sz*.1,sz*f*.28,sz*.18,0.5,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+    }
+
+    function draw(){
+        t += 0.007;
+        ctx.clearRect(0,0,W,H);
+
+        /* Fondo orgánico */
+        const bg = ctx.createRadialGradient(W*.38,H*.55,0,W*.5,H*.5,W*.8);
+        bg.addColorStop(0, opts.bg0||'#d8ccaa');
+        bg.addColorStop(0.5, opts.bg1||'#cfc49a');
+        bg.addColorStop(1, opts.bg2||'#bfb48a');
+        ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+        leaves.forEach(l=>{
+            l.angle += l.speed;
+            const px=(l.x/100)*W+Math.sin(t*l.swayAmp+l.sway)*28;
+            const py=(l.y/100)*H+Math.cos(t*l.swayAmp*.7+l.sway)*14;
+            drawLeaf(px,py,l.size,l.angle,l.col,l.opacity);
+        });
+
+        /* Bichos pequeños volando */
+        bugs.forEach(b=>{
+            b.x += b.vx + Math.sin(t*0.5+b.phase)*0.01;
+            b.y += b.vy + Math.cos(t*0.4+b.phase)*0.008;
+            b.angle += 0.05;
+            if(b.x<0)b.x=100; if(b.x>100)b.x=0;
+            if(b.y<0)b.y=100; if(b.y>100)b.y=0;
+            const px=(b.x/100)*W, py=(b.y/100)*H;
+            ctx.save();
+            ctx.translate(px,py); ctx.rotate(b.angle);
+            ctx.globalAlpha=0.55;
+            /* cuerpo */
+            ctx.beginPath(); ctx.ellipse(0,0,b.size*.35,b.size,0,0,Math.PI*2);
+            ctx.fillStyle=b.col; ctx.fill();
+            /* alas */
+            ctx.globalAlpha=0.3;
+            ctx.beginPath(); ctx.ellipse(-b.size*.7,-b.size*.3,b.size*.6,b.size*.35,-.4,0,Math.PI*2);
+            ctx.fillStyle='rgba(200,188,150,0.8)'; ctx.fill();
+            ctx.beginPath(); ctx.ellipse(b.size*.7,-b.size*.3,b.size*.6,b.size*.35,.4,0,Math.PI*2);
+            ctx.fill();
+            ctx.globalAlpha=1; ctx.restore();
+        });
+
+        butterflies.forEach(b=>{
+            b.x += b.vx; b.y += Math.sin(t*.8+b.phase)*.07; b.flap += .18;
+            if(b.x>110) b.x=-10;
+            drawButterfly((b.x/100)*W,(b.y/100)*H,b.size,b.col,b.flap);
+        });
+
+        ffs.forEach(f=>{
+            f.x += f.vx+Math.sin(t*.3+f.phase)*.007;
+            f.y += f.vy+Math.cos(t*.25+f.phase)*.007;
+            if(f.x<0)f.x=100; if(f.x>100)f.x=0;
+            if(f.y<0)f.y=100; if(f.y>100)f.y=0;
+            const b=(Math.sin(t*f.freq+f.phase)+1)/2;
+            if(b<.18)return;
+            const px=(f.x/100)*W, py=(f.y/100)*H;
+            const g=ctx.createRadialGradient(px,py,0,px,py,f.size*5*b);
+            g.addColorStop(0,'rgba(240,192,64,'+b*.88+')');
+            g.addColorStop(1,'transparent');
+            ctx.beginPath(); ctx.arc(px,py,f.size*5*b,0,Math.PI*2);
+            ctx.fillStyle=g; ctx.fill();
+            ctx.globalAlpha=b;
+            ctx.beginPath(); ctx.arc(px,py,f.size*.5,0,Math.PI*2);
+            ctx.fillStyle='#fff'; ctx.fill();
+            ctx.globalAlpha=1;
+        });
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+    return { resize };
+};
+</script>
+
 {% block scripts %}{% endblock %}
 </body>
 </html>

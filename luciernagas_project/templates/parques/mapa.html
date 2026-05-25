@@ -1,52 +1,372 @@
 {% extends "base.html" %}
 {% block titulo %}Mapa de Parques — Luciérnagas 2026{% endblock %}
-{% block header %}Parques Oficiales del Festival{% endblock %}
 
 {% block estilos %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-    main { padding: 1rem 1rem 3rem; }
-    #mapa { height: 500px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-    .mapa-wrapper { max-width: 1000px; margin: 0 auto; }
-    .popup-titulo { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; }
-    .popup-info { font-size: 0.85rem; color: #555; margin-bottom: 0.5rem; }
-    .popup-btn {
-        display: inline-block; padding: 0.4rem 1rem;
-        background: linear-gradient(135deg, #7c6af7, #a855f7);
-        color: #fff; border-radius: 6px; text-decoration: none; font-size: 0.82rem;
+    header.base-header { display: none; }
+    nav.base-nav {
+        background: transparent;
+        backdrop-filter: blur(22px);
+        -webkit-backdrop-filter: blur(22px);
+        border-bottom: none;
+    }
+    main { padding: 0; height: 100vh; overflow: hidden; }
+
+    .mapa-wrap {
+        position: relative;
+        width: 100vw; height: 100vh;
+        overflow: hidden;
+    }
+
+    #mapa {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        z-index: 1;
+    }
+
+    /* ── Título — backdrop blur, sin caja ni borde ── */
+    .mapa-title {
+        position: absolute;
+        top: 56px; left: 0;
+        z-index: 10;
+        padding: 1.5rem 3.5rem 3rem 2.5rem;
+        pointer-events: none;
+        animation: fadeDown 0.6s ease 0.1s both;
+        backdrop-filter: blur(22px);
+        -webkit-backdrop-filter: blur(22px);
+        -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%),
+                            linear-gradient(to bottom, black 88%, transparent 100%);
+        -webkit-mask-composite: destination-in;
+        mask-image: linear-gradient(to right, black 85%, transparent 100%),
+                    linear-gradient(to bottom, black 88%, transparent 100%);
+        mask-composite: intersect;
+    }
+    .mapa-title h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(1.8rem, 4vw, 3.2rem);
+        font-weight: 400; color: #3d2c1a;
+        margin: 0; line-height: 1.05;
+    }
+    .mapa-title h1 em { color: #c47d45; font-style: italic; }
+    .mapa-title p {
+        font-size: 0.65rem; letter-spacing: 0.16em;
+        text-transform: uppercase; color: rgba(61,44,26,0.6);
+        margin: 0.4rem 0 0;
+    }
+    @keyframes fadeDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── Contador — mismo blur que el título ── */
+    .mapa-counter {
+        position: absolute;
+        top: 56px; right: 0;
+        z-index: 10; text-align: right;
+        padding: 1.5rem 2.5rem 1.75rem 2rem;
+        pointer-events: none;
+        animation: fadeDown 0.6s ease 0.25s both;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        -webkit-mask-image: linear-gradient(to left, black 60%, transparent 100%),
+                            linear-gradient(to bottom, black 70%, transparent 100%);
+        -webkit-mask-composite: destination-in;
+        mask-image: linear-gradient(to left, black 60%, transparent 100%),
+                    linear-gradient(to bottom, black 70%, transparent 100%);
+        mask-composite: intersect;
+    }
+    .mapa-counter .cnt-num {
+        font-family: 'Playfair Display', serif;
+        font-size: 3rem; font-weight: 400;
+        color: #3d2c1a; line-height: 1;
+
+    }
+    .mapa-counter .cnt-label {
+        font-size: 0.6rem; letter-spacing: 0.14em;
+        text-transform: uppercase; color: rgba(61,44,26,0.55);
+
+    }
+
+    /* ── Overlay inferior suave ── */
+    .overlay-bottom {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        height: 80px; z-index: 5; pointer-events: none;
+        background: linear-gradient(to top, rgba(200,188,150,0.5) 0%, transparent 100%);
+    }
+
+    /* ── Canvas partículas ── */
+    #mapa-particles {
+        position: absolute; inset: 0; z-index: 4; pointer-events: none;
+    }
+
+    /* ── Panel deslizable ── */
+    .park-panel {
+        position: absolute;
+        bottom: 0; left: 50%;
+        transform: translateX(-50%) translateY(100%);
+        z-index: 20;
+        width: min(520px, 94vw);
+        background: #faf7f3;
+        border: 1px solid rgba(87,61,33,0.12);
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        box-shadow: 0 -12px 50px rgba(0,0,0,0.14);
+        transition: transform 0.45s cubic-bezier(0.34,1.2,0.64,1);
+    }
+    .park-panel.open { transform: translateX(-50%) translateY(0); }
+
+    .panel-drag {
+        width: 36px; height: 4px;
+        background: rgba(87,61,33,0.15); border-radius: 2px;
+        margin: 0.85rem auto 0;
+    }
+    .panel-body { padding: 1.25rem 2rem 2rem; }
+    .panel-eyebrow { font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: #a89070; margin-bottom: 0.4rem; }
+    .panel-name { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 400; color: #3d2c1a; margin-bottom: 1.25rem; line-height: 1.2; }
+    .panel-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1.5rem; margin-bottom: 1.25rem; }
+    .pf .pf-l { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: #a89070; margin-bottom: 0.15rem; }
+    .pf .pf-v { font-size: 0.85rem; color: #3d2c1a; line-height: 1.5; }
+    .panel-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .ptag { font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; padding: 0.25rem 0.75rem; border: 1px solid; }
+    .ptag-camping { color: #6b7d5e; border-color: rgba(107,125,94,0.4); background: rgba(107,125,94,0.08); }
+    .ptag-cabana  { color: #c47d45; border-color: rgba(196,125,69,0.4); background: rgba(196,125,69,0.08); }
+    .panel-btn {
+        display: block; width: 100%; padding: 0.85rem;
+        background: #3d2c1a; color: #ece0d2 !important;
+        text-align: center; text-decoration: none;
+        font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+        border-radius: 2px; border: none; cursor: pointer;
+        font-family: 'Inter', sans-serif; transition: background 0.2s;
+    }
+    .panel-btn:hover { background: #c47d45; color: #faf7f3 !important; }
+    .panel-close {
+        position: absolute; top: 0.85rem; right: 1.25rem;
+        background: none; border: none; cursor: pointer;
+        font-size: 1rem; color: #a89070; transition: color 0.2s;
+    }
+    .panel-close:hover { color: #3d2c1a; }
+
+    /* ── Leaflet overrides ── */
+    .leaflet-container { background: #d4c9a8 !important; font-family: 'Inter', sans-serif !important; }
+    .leaflet-tile-pane { opacity: 1 !important; }
+    .leaflet-control-zoom {
+        border: 1px solid rgba(87,61,33,0.15) !important;
+        border-radius: 2px !important; box-shadow: none !important;
+    }
+    .leaflet-control-zoom a {
+        background: rgba(250,247,243,0.9) !important;
+        color: #3d2c1a !important;
+        border-color: rgba(87,61,33,0.12) !important;
+        font-size: 16px !important;
+        backdrop-filter: blur(6px);
+    }
+    .leaflet-control-attribution {
+        background: rgba(250,247,243,0.8) !important;
+        color: #a89070 !important; font-size: 10px !important;
+    }
+    /* Icono marcador sin animación problemática */
+    .marker-pin {
+        width: 14px; height: 14px;
+        background: #3d2c1a; border-radius: 50%;
+        border: 2.5px solid #faf7f3;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+        transition: transform .2s, background .2s;
+        cursor: pointer;
+    }
+    .marker-pin.active {
+        background: #c47d45;
+        width: 18px; height: 18px;
+        transform: scale(1.1);
     }
 </style>
 {% endblock %}
 
+{% block header %}{% endblock %}
+{% block subheader %}{% endblock %}
+
 {% block contenido %}
-<div class="mapa-wrapper">
+<div class="mapa-wrap">
     <div id="mapa"></div>
+    <canvas id="mapa-particles"></canvas>
+    <div class="overlay-bottom"></div>
+
+    <!-- Título con fondo translúcido -->
+    <div class="mapa-title">
+        <h1>Parques<br><em>Oficiales</em></h1>
+        <p>Festival Internacional<br>de las Luciérnagas · 2026</p>
+    </div>
+
+    <!-- Contador con fondo translúcido -->
+    <div class="mapa-counter">
+        <div class="cnt-num" id="cnt">{{ parques|length }}</div>
+        <div class="cnt-label">parques<br>disponibles</div>
+    </div>
+
+    <!-- Panel deslizable -->
+    <div class="park-panel" id="park-panel">
+        <button class="panel-close" id="panel-close">✕</button>
+        <div class="panel-drag"></div>
+        <div class="panel-body">
+            <div class="panel-eyebrow">Parque oficial del festival</div>
+            <div class="panel-name" id="pname"></div>
+            <div class="panel-fields">
+                <div class="pf"><div class="pf-l">Dirección</div><div class="pf-v" id="pdir"></div></div>
+                <div class="pf"><div class="pf-l">Horario</div><div class="pf-v" id="phorario"></div></div>
+                <div class="pf" style="grid-column:1/-1">
+                    <div class="pf-l">Servicios</div>
+                    <div class="pf-v" id="pservicios"></div>
+                </div>
+            </div>
+            <div class="panel-tags" id="ptags"></div>
+            <a href="#" class="panel-btn" id="panel-cta">Ver detalle y reservar →</a>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    const parques = {{ parques_json|safe }};
-    const mapa = L.map('mapa').setView([19.4, -98.5], 8);
+const DATA = {{ parques_json|safe }};
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(mapa);
+/* ── MAPA ── */
+const map = L.map('mapa', {
+    zoomControl: false,
+    scrollWheelZoom: true,
+    preferCanvas: false,   /* false = DOM markers, más estables visualmente */
+    fadeAnimation: false,  /* quita fade que a veces oculta marcadores */
+    markerZoomAnimation: true,
+}).setView([19.4, -98.5], 8);
 
-    parques.forEach(p => {
-        const popup = `
-            <div class="popup-titulo">${p.nombre}</div>
-            <div class="popup-info">📍 ${p.direccion}</div>
-            <div class="popup-info">🕐 ${p.horario}</div>
-            <div class="popup-info">🛎️ ${p.servicios}</div>
-            ${p.tiene_cabanas ? '<div class="popup-info">🏠 Cabañas disponibles</div>' : ''}
-            <div class="popup-info">🏕️ Zona de camping</div>
-            <a href="/parques/${p.id}/" class="popup-btn">Ver detalle</a>
-        `;
-        L.marker([p.latitud, p.longitud])
-            .addTo(mapa)
-            .bindPopup(popup);
+/* Tiles OSM — sin crossOrigin que causa problemas en algunos browsers */
+const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 19,
+    updateWhenIdle: false,
+    updateWhenZooming: false,
+    keepBuffer: 6,
+}).addTo(map);
+
+/* FIX definitivo: esperar a que el DOM esté pintado y forzar invalidación */
+function forceRender() {
+    map.invalidateSize({ animate: false, pan: false });
+}
+/* Ejecutar en múltiples momentos para garantizar que los tiles y markers aparezcan */
+requestAnimationFrame(forceRender);
+setTimeout(forceRender, 100);
+setTimeout(forceRender, 400);
+setTimeout(forceRender, 900);
+
+map.whenReady(forceRender);
+
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+/* ── ICONOS usando divIcon simple sin animación de escala ── */
+function makeIcon(active) {
+    const s = active ? 18 : 14;
+    return L.divIcon({
+        html: `<div class="marker-pin${active ? ' active' : ''}" 
+                    style="width:${s}px;height:${s}px;
+                           ${active ? 'background:#c47d45;' : ''}"></div>`,
+        className: '',
+        iconSize: [s, s],
+        iconAnchor: [s/2, s/2],
+        popupAnchor: [0, -s/2],
     });
+}
+
+/* ── PANEL ── */
+const panel   = document.getElementById('park-panel');
+const closeBtn= document.getElementById('panel-close');
+let activeM   = null;
+
+function openPanel(p, m) {
+    document.getElementById('pname').textContent    = p.nombre;
+    document.getElementById('pdir').textContent     = p.direccion;
+    document.getElementById('phorario').textContent = p.horario;
+    document.getElementById('pservicios').textContent = p.servicios;
+
+    const tags = document.getElementById('ptags');
+    tags.innerHTML = `<span class="ptag ptag-camping">🏕️ Camping</span>`;
+    if (p.tiene_cabanas) tags.innerHTML += `<span class="ptag ptag-cabana">🏠 Cabañas</span>`;
+
+    document.getElementById('panel-cta').href = `/parques/${p.id}/`;
+    panel.classList.add('open');
+
+    if (activeM && activeM !== m) activeM.setIcon(makeIcon(false));
+    activeM = m;
+    m.setIcon(makeIcon(true));
+    map.panTo([p.latitud, p.longitud], { animate: true, duration: 0.4 });
+}
+
+closeBtn.addEventListener('click', () => {
+    panel.classList.remove('open');
+    if (activeM) { activeM.setIcon(makeIcon(false)); activeM = null; }
+});
+
+/* ── MARCADORES — sin animación de escala inicial que los ocultaba ── */
+DATA.forEach((p) => {
+    const m = L.marker([p.latitud, p.longitud], {
+        icon: makeIcon(false),
+        riseOnHover: true,
+    }).addTo(map);
+
+    m.on('click',     () => openPanel(p, m));
+    m.on('mouseover', () => { if (m !== activeM) m.setIcon(makeIcon(true)); });
+    m.on('mouseout',  () => { if (m !== activeM) m.setIcon(makeIcon(false)); });
+});
+
+/* ── CONTADOR animado ── */
+(function() {
+    const el = document.getElementById('cnt');
+    const target = DATA.length;
+    let cur = 0;
+    const iv = setInterval(() => {
+        el.textContent = ++cur;
+        if (cur >= target) clearInterval(iv);
+    }, 120);
+})();
+
+/* ── PARTÍCULAS de luciérnagas ── */
+(function() {
+    const c   = document.getElementById('mapa-particles');
+    const ctx = c.getContext('2d');
+    let W, H, ffs = [], t = 0;
+
+    function resize() { W = c.width = c.offsetWidth; H = c.height = c.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (let i = 0; i < 40; i++) ffs.push({
+        x: Math.random() * 100, y: Math.random() * 100,
+        vx: (Math.random() - .5) * .007,
+        vy: (Math.random() - .5) * .007,
+        phase: Math.random() * Math.PI * 2,
+        freq: .4 + Math.random() * .7,
+        size: 1 + Math.random() * 2,
+    });
+
+    function draw() {
+        t += .006;
+        ctx.clearRect(0, 0, W, H);
+        ffs.forEach(f => {
+            f.x += f.vx; f.y += f.vy;
+            if (f.x < 0) f.x = 100; if (f.x > 100) f.x = 0;
+            if (f.y < 0) f.y = 100; if (f.y > 100) f.y = 0;
+            const b = (Math.sin(t * f.freq + f.phase) + 1) / 2;
+            if (b < .22) return;
+            const px = (f.x / 100) * W, py = (f.y / 100) * H;
+            const g = ctx.createRadialGradient(px, py, 0, px, py, f.size * 5 * b);
+            g.addColorStop(0, `rgba(240,192,64,${b * .85})`);
+            g.addColorStop(1, 'transparent');
+            ctx.beginPath(); ctx.arc(px, py, f.size * 5 * b, 0, Math.PI * 2);
+            ctx.fillStyle = g; ctx.fill();
+            ctx.globalAlpha = b * .9;
+            ctx.beginPath(); ctx.arc(px, py, f.size * .5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffa0'; ctx.fill();
+            ctx.globalAlpha = 1;
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
 </script>
 {% endblock %}
