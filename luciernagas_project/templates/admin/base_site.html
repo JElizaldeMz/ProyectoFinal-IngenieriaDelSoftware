@@ -1,0 +1,66 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} — MEC Solutions Admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        🌿 MEC Solutions <span style="font-weight:300;opacity:0.7;">· Admin</span>
+    </a>
+</h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    :root {
+        --primary:      #573d21;
+        --secondary:    #3d2c1a;
+        --accent:       #c47d45;
+        --primary-fg:   #faf7f3;
+        --body-bg:      #ece0d2;
+        --body-fg:      #3d2c1a;
+        --body-quiet-color: #7a6550;
+        --header-bg:    #3d2c1a;
+        --header-link-color: #ece0d2;
+        --breadcrumbs-bg:   #ddd0bc;
+        --breadcrumbs-link-fg: #573d21;
+        --link-fg:      #573d21;
+        --link-hover-color: #c47d45;
+        --hair-color:   rgba(87,61,33,0.15);
+        --border-color: rgba(87,61,33,0.2);
+        --darkened-bg:  #ddd0bc;
+        --selected-row: #f0e8d8;
+        --button-bg:    #573d21;
+        --button-fg:    #faf7f3;
+    }
+    #header { background:#3d2c1a !important; border-bottom:3px solid #c47d45; }
+    #branding h1 a { color:#e3a36e !important; font-family:Georgia,serif; font-weight:400; letter-spacing:0.02em; }
+    div.breadcrumbs { background:#ddd0bc; border-bottom:1px solid rgba(87,61,33,0.15); color:#7a6550; }
+    div.breadcrumbs a { color:#573d21; }
+    body { background:#ece0d2; font-family:'Inter','Segoe UI',sans-serif; }
+    h1,h2,h3 { font-family:Georgia,serif; font-weight:400; color:#3d2c1a; }
+    .module h2,.module caption { background:#573d21 !important; color:#faf7f3 !important; font-family:Georgia,serif; font-weight:400; letter-spacing:0.03em; }
+    .module { border:1px solid rgba(87,61,33,0.15); border-radius:4px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+    #result_list th { background:#ddd0bc; color:#3d2c1a; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; border-bottom:1px solid rgba(87,61,33,0.2); }
+    #result_list tr:hover td { background:#f5ede0; }
+    .button,input[type=submit],input[type=button],.submit-row input,a.button { background:#573d21 !important; color:#faf7f3 !important; border:none !important; border-radius:2px !important; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; padding:8px 16px !important; transition:background 0.2s !important; }
+    .button:hover,input[type=submit]:hover { background:#c47d45 !important; }
+    .button.default { background:#c47d45 !important; }
+    .deletelink,a.deletelink { background:#8b3a2a !important; color:#faf7f3 !important; }
+    #changelist-filter { background:#faf7f3; border-left:1px solid rgba(87,61,33,0.15); }
+    #changelist-filter h2 { background:#573d21; color:#faf7f3; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; }
+    #changelist-filter li.selected a { color:#c47d45; font-weight:500; }
+    input[type=text],input[type=password],input[type=email],input[type=number],select,textarea { border:1px solid rgba(87,61,33,0.25) !important; border-radius:2px !important; background:#faf7f3 !important; color:#3d2c1a !important; }
+    input:focus,select:focus,textarea:focus { border-color:#c47d45 !important; box-shadow:0 0 0 3px rgba(196,125,69,0.15) !important; outline:none !important; }
+    .submit-row { background:#f5ede0; border-top:1px solid rgba(87,61,33,0.15); }
+    a:link,a:visited { color:#573d21; }
+    a:hover { color:#c47d45; }
+    .messagelist li.success { background:#eef4e8; border-color:rgba(107,125,94,0.4); color:#4a6b35; }
+    .messagelist li.error   { background:#faeae8; border-color:rgba(139,58,42,0.3); color:#8b3a2a; }
+    .paginator a { border:1px solid rgba(87,61,33,0.2); border-radius:2px; color:#573d21; }
+    .paginator a:hover { background:#573d21; color:#faf7f3; }
+    .paginator .this-page { background:#573d21; color:#faf7f3; }
+</style>
+{% endblock %}
