@@ -8,14 +8,13 @@ from django.db import models
 
 
 class UsuarioManager(BaseUserManager):
-    """Manager personalizado que usa email como identificador en lugar de username."""
 
     def create_user(self, email, nombre, apellido, password=None, **extra_fields):
         if not email:
             raise ValueError('El correo electrónico es obligatorio.')
         email = self.normalize_email(email)
-        user  = self.model(email=email, nombre=nombre, apellido=apellido, **extra_fields)
-        user.set_password(password)   # Aplica hashing automático (RNF04)
+        user = self.model(email=email, nombre=nombre, apellido=apellido, **extra_fields)
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
@@ -26,17 +25,12 @@ class UsuarioManager(BaseUserManager):
 
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
-    """
-    Clase base del sistema de autenticación (RF01.1, RF01.2).
-    La contraseña se almacena hasheada por Django (RNF04).
-    """
-
     nombre   = models.CharField('Nombre', max_length=100)
     apellido = models.CharField('Apellido(s)', max_length=150)
     email    = models.EmailField('Correo electrónico', unique=True)
 
     is_active = models.BooleanField(default=True)
-    is_staff  = models.BooleanField(default=False)   # True → acceso al panel de admin
+    is_staff  = models.BooleanField(default=False)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     objects = UsuarioManager()
@@ -56,11 +50,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
 
 class Cliente(models.Model):
-    """
-    Perfil de cliente asociado 1:1 con Usuario.
-    Se crea automáticamente al registrarse (CU-03).
-    """
-
     usuario = models.OneToOneField(
         Usuario,
         on_delete=models.CASCADE,
@@ -76,16 +65,10 @@ class Cliente(models.Model):
         return f'Cliente: {self.usuario.get_full_name()}'
 
     def ver_reservaciones(self):
-        """Devuelve solo las reservaciones activas del cliente (RF01.4)."""
         return self.reservaciones.filter(estado='activa')
 
 
 class Administrador(models.Model):
-    """
-    Perfil de administrador.  Se crea manualmente desde el panel de Django Admin.
-    Un administrador siempre tiene is_staff=True en su Usuario asociado.
-    """
-
     usuario = models.OneToOneField(
         Usuario,
         on_delete=models.CASCADE,

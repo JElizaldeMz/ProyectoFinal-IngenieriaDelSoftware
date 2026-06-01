@@ -1,5 +1,5 @@
 """
-Validación de reservaciones — patrón Strategy + Template Method + Singleton
+Patrón Strategy + Template Method + Singleton — Validación de reservaciones
 MEC Solutions
 """
 
@@ -8,34 +8,23 @@ from datetime import date, timedelta
 from django.conf import settings
 
 
-# ─── Base (Template Method) ───────────────────────────────────────────────────
-
+# ── Template Method ───────────────────────────────────────────────────────────
 class ValidacionReservacion(ABC):
-    """
-    Clase base para todas las validaciones.
-    Define el esqueleto: primero revisa coherencia de fechas (paso común),
-    luego delega la regla específica a cada subclase (_validar_regla).
-    """
+    """Clase base — Template Method."""
 
     def validar(self, reservacion) -> tuple[bool, str]:
-        # Precondición común a todas las estrategias
         if reservacion.fecha_inicio > reservacion.fecha_termino:
             return False, 'La fecha de inicio no puede ser mayor que la fecha de término.'
         return self._validar_regla(reservacion)
 
     @abstractmethod
     def _validar_regla(self, reservacion) -> tuple[bool, str]:
-        """Cada estrategia concreta implementa su propia regla de negocio."""
         pass
 
 
-# ─── Strategy 1: rango del festival ───────────────────────────────────────────
-
+# ── Strategy 1 ────────────────────────────────────────────────────────────────
 class ValidacionFestival(ValidacionReservacion):
-    """
-    RNF01 — Las reservaciones solo pueden hacerse dentro del período
-    junio–agosto 2026 (meses configurados en settings).
-    """
+    """RNF01 — Solo fechas dentro de junio–agosto 2026."""
 
     def _validar_regla(self, reservacion) -> tuple[bool, str]:
         anio = settings.FESTIVAL_ANIO
@@ -49,13 +38,9 @@ class ValidacionFestival(ValidacionReservacion):
         return True, ''
 
 
-# ─── Strategy 2: sin martes ───────────────────────────────────────────────────
-
+# ── Strategy 2 ────────────────────────────────────────────────────────────────
 class ValidacionSinMartes(ValidacionReservacion):
-    """
-    RNF02 — Los martes están bloqueados por mantenimiento de parques.
-    Itera día a día dentro del rango para detectar cualquier martes incluido.
-    """
+    """RNF02 — No se permiten reservaciones que incluyan martes."""
 
     def _validar_regla(self, reservacion) -> tuple[bool, str]:
         fecha_actual = reservacion.fecha_inicio
@@ -69,17 +54,15 @@ class ValidacionSinMartes(ValidacionReservacion):
         return True, ''
 
 
-# ─── Strategy 3: disponibilidad con solapamiento de fechas ───────────────────
-
+# ── Strategy 3 — Disponibilidad por fechas ───────────────────────────────────
 class ValidacionDisponibilidad(ValidacionReservacion):
     """
-    RNF06 — Controla que el parque no supere su capacidad máxima.
+    RNF06 — Verifica disponibilidad considerando solapamiento de fechas.
 
-    La lógica de solapamiento es: dos estancias se cruzan si
-        inicio_existente < fin_nueva  AND  fin_existente > inicio_nueva
-    Es decir, cualquier reservación activa que empiece antes de que
-    termine la nueva Y termine después de que empiece la nueva compite
-    por el mismo espacio.
+    Dos reservaciones se solapan si:
+        inicio_A < termino_B  AND  termino_A > inicio_A
+    Es decir, la nueva reservación compite con cualquier reservación activa
+    cuyas fechas se crucen con las fechas solicitadas.
     """
 
     def _validar_regla(self, reservacion) -> tuple[bool, str]:
@@ -90,22 +73,27 @@ class ValidacionDisponibilidad(ValidacionReservacion):
         fecha_ini   = reservacion.fecha_inicio
         fecha_fin   = reservacion.fecha_termino
 
-        # El parque podría no ofrecer cabañas
+        # Verificar que el parque ofrezca ese tipo de hospedaje
         if tipo_visita == 'cabana' and not parque.tiene_cabanas:
             return False, f'El parque {parque.nombre} no cuenta con cabañas.'
 
-        capacidad = parque.cap_cabanas if tipo_visita == 'cabana' else parque.cap_camping
+        # Capacidad máxima para el tipo solicitado
+        if tipo_visita == 'cabana':
+            capacidad = parque.cap_cabanas
+        else:
+            capacidad = parque.cap_camping
 
-        # Cuántas reservaciones activas se solapan con el rango solicitado
-        solapadas = Reservacion.objects.filter(
+        # Contar reservaciones activas que se solapan con las fechas solicitadas
+        # Solapamiento: inicio_existente < fecha_fin_nueva AND termino_existente > fecha_ini_nueva
+        reservaciones_solapadas = Reservacion.objects.filter(
             parque=parque,
             tipo_visita=tipo_visita,
             estado='activa',
-            fecha_inicio__lt=fecha_fin,
-            fecha_termino__gt=fecha_ini,
+            fecha_inicio__lt=fecha_fin,   # empieza antes de que termine la nueva
+            fecha_termino__gt=fecha_ini,  # termina después de que empiece la nueva
         ).count()
 
-        if solapadas >= capacidad:
+        if reservaciones_solapadas >= capacidad:
             return False, (
                 f'El parque {parque.nombre} no tiene lugares disponibles de '
                 f'{reservacion.get_tipo_visita_display()} '
@@ -117,15 +105,11 @@ class ValidacionDisponibilidad(ValidacionReservacion):
         return True, ''
 
 
-# ─── Contexto Singleton ───────────────────────────────────────────────────────
-
+# ── Singleton + Context ───────────────────────────────────────────────────────
 class ValidadorReservaciones:
     """
-    Contexto del patrón Strategy.  Ejecuta las tres estrategias en orden
-    y se detiene en la primera que falle.
-
-    Es un Singleton: la instancia se crea una sola vez y se reutiliza,
-    evitando reinstanciar las estrategias en cada petición.
+    Contexto del patrón Strategy.
+    Singleton: una única instancia global con las estrategias ya cargadas.
     """
 
     _instancia = None
@@ -141,7 +125,6 @@ class ValidadorReservaciones:
         return cls._instancia
 
     def validar(self, reservacion) -> tuple[bool, str]:
-        """Ejecuta todas las estrategias; devuelve (False, mensaje) al primer fallo."""
         for estrategia in self.estrategias:
             valido, mensaje = estrategia.validar(reservacion)
             if not valido:
