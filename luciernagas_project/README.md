@@ -82,13 +82,81 @@ python manage.py createsuperuser
 El sistema pedirá: correo electrónico, nombre, apellido y contraseña.
 Este usuario tendrá acceso al panel de administrador del sistema.
 
-### 7. Ejecutar el servidor de desarrollo
+### 7. Cargar los datos de prueba (recomendado)
+
+```bash
+python manage.py seed_data
+```
+
+Esto crea automáticamente los 2 administradores, 9 parques de Oaxaca, 10 clientes y 20 reservaciones de prueba listos para usar. Ver sección **Base de datos de prueba** para las credenciales.
+
+### 8. Ejecutar el servidor de desarrollo
 
 ```bash
 python manage.py runserver
 ```
 
 El sistema estará disponible en: http://127.0.0.1:8000/
+
+---
+
+## Acceso al sistema
+
+Con el servidor corriendo en http://127.0.0.1:8000/, estas son las URLs y el flujo de cada tipo de usuario:
+
+### Administrador
+
+| Acción | URL |
+|---|---|
+| Iniciar sesión como admin | http://127.0.0.1:8000/usuarios/login/ |
+| Panel Django Admin (gestión avanzada) | http://127.0.0.1:8000/admin/ |
+| Lista de parques (CRUD) | http://127.0.0.1:8000/parques/admin/ |
+| Crear nuevo parque | http://127.0.0.1:8000/parques/admin/crear/ |
+| Ver todas las reservaciones | http://127.0.0.1:8000/reservaciones/admin/todas/ |
+
+**Flujo del administrador:**
+1. Entrar a http://127.0.0.1:8000/usuarios/login/ con una cuenta `is_staff=True`
+2. Desde ahí puede gestionar parques, configurar disponibilidad y consultar reservaciones
+3. Para el panel técnico de Django: http://127.0.0.1:8000/admin/
+
+> **Credenciales de prueba (tras ejecutar `seed_data`):**
+> - `admin@luciernagas.mx` / `admin1234`
+> - `jeduardo@luciernagas.mx` / `mec2026`
+
+---
+
+### Usuario cliente
+
+| Acción | URL |
+|---|---|
+| Página principal | http://127.0.0.1:8000/ |
+| Registrarse (cuenta nueva) | http://127.0.0.1:8000/usuarios/registro/ |
+| Iniciar sesión | http://127.0.0.1:8000/usuarios/login/ |
+| Ver mapa de parques | http://127.0.0.1:8000/parques/mapa/ |
+| Mis reservaciones | http://127.0.0.1:8000/reservaciones/mis-reservaciones/ |
+
+**Flujo del cliente:**
+1. Entrar a http://127.0.0.1:8000/ — página principal con los parques destacados
+2. Registrarse en http://127.0.0.1:8000/usuarios/registro/ o iniciar sesión si ya tiene cuenta
+3. Explorar el mapa interactivo y hacer clic en un parque para ver su detalle
+4. Desde el detalle del parque, hacer clic en "Reservar" para abrir el formulario
+5. Seleccionar fechas (junio–agosto 2026, sin martes), número de personas y tipo de visita
+6. Al confirmar, el sistema registra la reservación y envía el correo de confirmación a la terminal (en modo desarrollo)
+7. Consultar y cancelar reservaciones en "Mis reservaciones"
+
+> **Credenciales de prueba (tras ejecutar `seed_data`):**
+> - `vtorres@gmail.com` / `Festival2026!`
+> - `aguzman@gmail.com` / `Oaxaca2026!`
+> - (ver sección **Base de datos de prueba** para la lista completa)
+
+---
+
+### Visitante sin sesión
+
+Un visitante que no ha iniciado sesión puede:
+- Ver la página principal con los parques destacados
+- Explorar el mapa interactivo y ver la información de cada parque
+- No puede realizar reservaciones — el sistema redirige al login si lo intenta
 
 ---
 
